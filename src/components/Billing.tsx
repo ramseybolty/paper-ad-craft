@@ -188,13 +188,23 @@ const Billing = () => {
     }
   ];
 
-  // Filter logic
+  // Filter logic with enhanced filters
   const filteredAds = adBillingData.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || ad.paymentStatus === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesClient = clientFilter === "all" || ad.clientType === clientFilter;
+    
+    // Date filter logic
+    let matchesDate = true;
+    if (dateRange.from || dateRange.to) {
+      const adDate = new Date(ad.publishDates[0]);
+      if (dateRange.from && adDate < dateRange.from) matchesDate = false;
+      if (dateRange.to && adDate > dateRange.to) matchesDate = false;
+    }
+    
+    return matchesSearch && matchesStatus && matchesClient && matchesDate;
   });
 
   const getStatusBadge = (status: string) => {
@@ -429,7 +439,18 @@ const Billing = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Client Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clients</SelectItem>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="agency">Agency</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-36">
                   <SelectValue placeholder="Payment Status" />
@@ -442,6 +463,35 @@ const Billing = () => {
                   <SelectItem value="overdue">Overdue</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-48 justify-start text-left">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      "Pick date range"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange.from}
+                    selected={dateRange}
+                    onSelect={(range) => setDateRange(range as any)}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </CardContent>
