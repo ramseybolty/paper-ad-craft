@@ -50,7 +50,10 @@ const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
                     ? "shadow-sm bg-primary text-primary-foreground" 
                     : "hover:bg-muted/50"
                 }`}
-                onClick={() => onViewChange(item.id)}
+                onClick={() => {
+                  console.log('Sidebar navigation clicked:', item.id);
+                  onViewChange(item.id);
+                }}
               >
                 <item.icon className="h-4 w-4 mr-3" />
                 {item.label}
@@ -74,7 +77,10 @@ const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
                     ? "shadow-sm bg-primary text-primary-foreground" 
                     : "hover:bg-muted/50"
                 }`}
-                onClick={() => onViewChange(item.id)}
+                onClick={() => {
+                  console.log('Admin navigation clicked:', item.id);
+                  onViewChange(item.id);
+                }}
               >
                 <item.icon className="h-4 w-4 mr-3" />
                 {item.label}

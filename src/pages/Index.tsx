@@ -11,6 +11,11 @@ import Settings from "@/components/Settings";
 const Index = () => {
   const [activeView, setActiveView] = useState("dashboard");
 
+  const handleViewChange = (view: string) => {
+    console.log('Changing view to:', view);
+    setActiveView(view);
+  };
+
   const renderContent = () => {
     switch (activeView) {
       case "create-ad":
@@ -36,7 +41,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="flex">
-        <Sidebar activeView={activeView} onViewChange={setActiveView} />
+        <Sidebar activeView={activeView} onViewChange={handleViewChange} />
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             {renderContent()}
