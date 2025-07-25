@@ -20,6 +20,13 @@ const AdForm = () => {
   const [tempDate, setTempDate] = useState<Date>();
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
+  const [isClientFromDropdown, setIsClientFromDropdown] = useState(false);
+  const [isAgentFromDropdown, setIsAgentFromDropdown] = useState(false);
+  
+  // Set tomorrow as default date
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -79,6 +86,7 @@ const AdForm = () => {
         clientType: client.type,
         clientContact: client.contact
       });
+      setIsClientFromDropdown(true);
       setClientSearchOpen(false);
     }
   };
@@ -91,8 +99,27 @@ const AdForm = () => {
         agentName: agent.name,
         agentContact: agent.contact
       });
+      setIsAgentFromDropdown(true);
       setAgentSearchOpen(false);
     }
+  };
+
+  const clearClientSelection = () => {
+    setFormData({
+      ...formData,
+      clientName: "",
+      clientContact: ""
+    });
+    setIsClientFromDropdown(false);
+  };
+
+  const clearAgentSelection = () => {
+    setFormData({
+      ...formData,
+      agentName: "",
+      agentContact: ""
+    });
+    setIsAgentFromDropdown(false);
   };
 
   const categories = [
@@ -182,8 +209,20 @@ const AdForm = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Search & Select Client (Optional)</Label>
+                  <div className="flex items-center space-x-2">
+                    <Label>Search & Select Client (Optional)</Label>
+                    {isClientFromDropdown && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearClientSelection}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Clear & Edit Manually
+                      </Button>
+                    )}
+                  </div>
                   <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -191,6 +230,7 @@ const AdForm = () => {
                         role="combobox"
                         aria-expanded={clientSearchOpen}
                         className="w-full justify-between text-left font-normal"
+                        disabled={isClientFromDropdown}
                       >
                         <span className="truncate">
                           {formData.clientName || "Search clients..."}
@@ -198,18 +238,18 @@ const AdForm = () => {
                         <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
+                    <PopoverContent className="w-full p-0 bg-card border shadow-md z-50" align="start">
+                      <Command className="bg-card">
                         <CommandInput placeholder="Search clients by name or contact..." />
-                        <CommandList>
+                        <CommandList className="bg-card">
                           <CommandEmpty>No clients found.</CommandEmpty>
-                          <CommandGroup heading="Saved Clients">
+                          <CommandGroup heading="Saved Clients" className="bg-card">
                             {savedClients.map((client) => (
                               <CommandItem
                                 key={client.id}
                                 value={`${client.name} ${client.contact} ${client.email}`}
                                 onSelect={() => selectSavedClient(client.id.toString())}
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:bg-muted"
                               >
                                 <div className="flex flex-col w-full">
                                   <div className="flex items-center justify-between">
@@ -229,7 +269,6 @@ const AdForm = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </div>
 
                 <div className="space-y-2">
                   <Label>Client Type</Label>
@@ -251,9 +290,18 @@ const AdForm = () => {
                     placeholder="Enter client name"
                     value={formData.clientName}
                     onChange={(e) => setFormData({...formData, clientName: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                    )}
+                    disabled={isClientFromDropdown}
                     required
                   />
+                  {isClientFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Client selected from saved list. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -263,15 +311,37 @@ const AdForm = () => {
                     placeholder="Client phone/email"
                     value={formData.clientContact}
                     onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                    )}
+                    disabled={isClientFromDropdown}
                     required
                   />
+                  {isClientFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Contact auto-filled from saved client. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Search & Select Agent (Optional)</Label>
+                  <div className="flex items-center space-x-2">
+                    <Label>Search & Select Agent (Optional)</Label>
+                    {isAgentFromDropdown && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAgentSelection}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Clear & Edit Manually
+                      </Button>
+                    )}
+                  </div>
                   <Popover open={agentSearchOpen} onOpenChange={setAgentSearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -279,6 +349,7 @@ const AdForm = () => {
                         role="combobox"
                         aria-expanded={agentSearchOpen}
                         className="w-full justify-between text-left font-normal"
+                        disabled={isAgentFromDropdown}
                       >
                         <span className="truncate">
                           {formData.agentName || "Search agents..."}
@@ -286,18 +357,18 @@ const AdForm = () => {
                         <Building className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
+                    <PopoverContent className="w-full p-0 bg-card border shadow-md z-50" align="start">
+                      <Command className="bg-card">
                         <CommandInput placeholder="Search agents by name, contact, or agency..." />
-                        <CommandList>
+                        <CommandList className="bg-card">
                           <CommandEmpty>No agents found.</CommandEmpty>
-                          <CommandGroup heading="Saved Agents">
+                          <CommandGroup heading="Saved Agents" className="bg-card">
                             {savedAgents.map((agent) => (
                               <CommandItem
                                 key={agent.id}
                                 value={`${agent.name} ${agent.contact} ${agent.email} ${agent.agency}`}
                                 onSelect={() => selectSavedAgent(agent.id.toString())}
-                                className="cursor-pointer"
+                                className="cursor-pointer hover:bg-muted"
                               >
                                 <div className="flex flex-col w-full">
                                   <div className="flex items-center justify-between">
@@ -326,8 +397,17 @@ const AdForm = () => {
                     placeholder="Enter agent name"
                     value={formData.agentName}
                     onChange={(e) => setFormData({...formData, agentName: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isAgentFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                    )}
+                    disabled={isAgentFromDropdown}
                   />
+                  {isAgentFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Agent selected from saved list. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -337,8 +417,17 @@ const AdForm = () => {
                     placeholder="Agent phone/email"
                     value={formData.agentContact}
                     onChange={(e) => setFormData({...formData, agentContact: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isAgentFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                    )}
+                    disabled={isAgentFromDropdown}
                   />
+                  {isAgentFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Contact auto-filled from saved agent. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -380,11 +469,13 @@ const AdForm = () => {
                         {tempDate ? format(tempDate, "PPP") : <span>Select a publish date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 bg-card border shadow-md z-50" align="start">
                       <Calendar
                         mode="single"
                         selected={tempDate}
                         onSelect={setTempDate}
+                        disabled={(date) => date < tomorrow}
+                        defaultMonth={tomorrow}
                         initialFocus
                         className={cn("p-3 pointer-events-auto")}
                       />
