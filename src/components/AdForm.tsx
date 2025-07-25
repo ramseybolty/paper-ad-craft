@@ -17,9 +17,13 @@ import { cn } from "@/lib/utils";
 const AdForm = () => {
   const { toast } = useToast();
   
-  // Set tomorrow as default date
+  // Set tomorrow as default date and calculate today for comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+  
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0); // Reset time to start of day
   
   const [publishDates, setPublishDates] = useState<Date[]>([tomorrow]); // Default to tomorrow
   const [tempDate, setTempDate] = useState<Date>();
@@ -477,7 +481,7 @@ const AdForm = () => {
                         mode="single"
                         selected={tempDate}
                         onSelect={setTempDate}
-                        disabled={(date) => date < tomorrow}
+                        disabled={(date) => date <= today}
                         defaultMonth={tomorrow}
                         initialFocus
                         className={cn("p-3 pointer-events-auto")}
