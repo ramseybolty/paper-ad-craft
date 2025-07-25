@@ -64,9 +64,14 @@ const Billing = () => {
     { name: "Amit Singh", contact: "+91 76543 21098" },
     { name: "Suresh Patel", contact: "+91 65432 10987" }
   ];
-  const availableClientTypes = [
-    { type: "individual", label: "Individual", contact: "Personal Clients" },
-    { type: "agency", label: "Agency", contact: "Business Clients" }
+  
+  // Extract unique clients from billing data with contact info
+  const availableClients = [
+    { name: "John Smith", contact: "+91 98765 11111", type: "individual" },
+    { name: "ABC Digital Agency", contact: "+91 87654 22222", type: "agency" },
+    { name: "Sarah Johnson", contact: "+91 76543 33333", type: "individual" },
+    { name: "Prime Motors Ltd", contact: "+91 65432 44444", type: "agency" },
+    { name: "Maria Garcia", contact: "+91 54321 55555", type: "individual" }
   ];
 
   // Mock ads with billing information and enhanced payment structure
@@ -219,7 +224,7 @@ const Billing = () => {
                          ad.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || ad.paymentStatus === statusFilter;
-    const matchesClient = clientFilter === "all" || ad.clientType === clientFilter;
+    const matchesClient = clientFilter === "all" || ad.clientName === clientFilter;
     const matchesAgent = agentFilter === "all" || ad.agentName === agentFilter;
     
     // Date filter logic
@@ -476,15 +481,15 @@ const Billing = () => {
                   >
                     {clientFilter === "all"
                       ? "All Clients"
-                      : clientFilter === "individual" ? "Individual" : "Agency"}
+                      : availableClients.find(c => c.name === clientFilter)?.name || clientFilter}
                     <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-36 p-0 bg-background border shadow-md z-50">
+                <PopoverContent className="w-48 p-0 bg-background border shadow-md z-50">
                   <Command className="bg-background">
-                    <CommandInput placeholder="Search client type..." className="h-9" />
+                    <CommandInput placeholder="Search clients..." className="h-9" />
                     <CommandList>
-                      <CommandEmpty>No client type found.</CommandEmpty>
+                      <CommandEmpty>No client found.</CommandEmpty>
                       <CommandGroup>
                         <CommandItem
                           value="all"
@@ -496,19 +501,19 @@ const Billing = () => {
                         >
                           All Clients
                         </CommandItem>
-                        {availableClientTypes.map((type) => (
+                        {availableClients.map((client) => (
                           <CommandItem
-                            key={type.type}
-                            value={type.type}
+                            key={client.name}
+                            value={`${client.name} ${client.contact}`}
                             onSelect={() => {
-                              setClientFilter(type.type);
+                              setClientFilter(client.name);
                               setClientSearchOpen(false);
                             }}
                             className="cursor-pointer hover:bg-muted"
                           >
                             <div className="flex flex-col">
-                              <span>{type.label}</span>
-                              <span className="text-xs text-muted-foreground">{type.contact}</span>
+                              <span>{client.name}</span>
+                              <span className="text-xs text-muted-foreground">{client.contact}</span>
                             </div>
                           </CommandItem>
                         ))}
