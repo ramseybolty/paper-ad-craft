@@ -22,13 +22,21 @@ import {
   Filter
 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Billing = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedAd, setSelectedAd] = useState<any>(null);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [paymentUpdateAd, setPaymentUpdateAd] = useState<any>(null);
+  const [newPaymentStatus, setNewPaymentStatus] = useState("");
+  const [receiptNumber, setReceiptNumber] = useState("");
+  
+  // Mock user role - in real implementation this would come from auth context
+  const currentUserRole = "admin"; // admin, staff, accountant
 
   // Mock ads with billing information
   const adBillingData = [
@@ -183,8 +191,79 @@ const Billing = () => {
   };
 
   const updateAdDiscount = (adId: number, discountType: 'percent' | 'amount', value: number) => {
+    // Check if user has permission to apply discount
+    const adDate = new Date(adBillingData.find(ad => ad.id === adId)?.publishDates[0] || '');
+    const daysDifference = Math.floor((new Date().getTime() - adDate.getTime()) / (1000 * 3600 * 24));
+    
+    if (daysDifference > 3 && currentUserRole !== "admin") {
+      toast({
+        title: "Permission Denied",
+        description: "Only admin can modify discounts for ads older than 3 days",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // In real implementation, this would update the backend
     console.log(`Updating ad ${adId} with ${discountType} discount: ${value}`);
+    toast({
+      title: "Discount Applied",
+      description: `${discountType === 'percent' ? value + '%' : '$' + value} discount applied successfully`,
+    });
+  };
+
+  const updatePaymentStatus = (adId: number, status: string, receipt?: string) => {
+    const ad = adBillingData.find(a => a.id === adId);
+    if (!ad) return;
+
+    // Check permissions
+    if (ad.paymentStatus === "paid" && status !== "paid" && currentUserRole !== "admin") {
+      toast({
+        title: "Permission Denied",
+        description: "Only admin can change status from paid to unpaid",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (status === "paid" && !receipt) {
+      toast({
+        title: "Receipt Required",
+        description: "Receipt/UTR number is required when marking as paid",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // In real implementation, this would update the backend
+    console.log(`Updating payment status for ad ${adId} to ${status}`, receipt ? `Receipt: ${receipt}` : '');
+    toast({
+      title: "Payment Status Updated",
+      description: `Payment status changed to ${status}`,
+    });
+    
+    // Reset form
+    setPaymentUpdateAd(null);
+    setNewPaymentStatus("");
+    setReceiptNumber("");
+  };
+
+  const downloadInvoice = (ad: any) => {
+    // In real implementation, this would generate and download PDF
+    console.log(`Downloading invoice for ${ad.invoiceNumber}`);
+    toast({
+      title: "Download Started",
+      description: `Invoice ${ad.invoiceNumber} is being downloaded`,
+    });
+  };
+
+  const viewInvoice = (ad: any) => {
+    // In real implementation, this would open invoice in a new tab or modal
+    console.log(`Viewing invoice for ${ad.invoiceNumber}`);
+    toast({
+      title: "Invoice Opened",
+      description: `Viewing invoice ${ad.invoiceNumber}`,
+    });
   };
 
   // Summary calculations
@@ -471,13 +550,79 @@ const Billing = () => {
                           </DialogContent>
                         </Dialog>
                         
-                        <Button variant="ghost" size="sm" title="Update Payment">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" title="View Invoice">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" title="Update Payment" onClick={() => setPaymentUpdateAd(ad)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Update Payment Status - {ad.invoiceNumber}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Current Status: {getStatusBadge(ad.paymentStatus)}</Label>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Total Amount: ${ad.totalAmount.toFixed(2)} | Paid: ${ad.paidAmount.toFixed(2)}
+                                </p>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label>New Payment Status</Label>
+                                <Select value={newPaymentStatus} onValueChange={setNewPaymentStatus}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select new status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="paid">Paid</SelectItem>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="partial">Partial</SelectItem>
+                                    <SelectItem value="overdue">Overdue</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {newPaymentStatus === "paid" && (
+                                <div className="space-y-2">
+                                  <Label htmlFor="receipt-number">Receipt/UTR Number *</Label>
+                                  <Input
+                                    id="receipt-number"
+                                    placeholder="Enter receipt or UTR number"
+                                    value={receiptNumber}
+                                    onChange={(e) => setReceiptNumber(e.target.value)}
+                                  />
+                                </div>
+                              )}
+
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  className="flex-1"
+                                  onClick={() => {
+                                    setPaymentUpdateAd(null);
+                                    setNewPaymentStatus("");
+                                    setReceiptNumber("");
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  className="flex-1" 
+                                  onClick={() => updatePaymentStatus(ad.id, newPaymentStatus, receiptNumber)}
+                                  disabled={!newPaymentStatus}
+                                >
+                                  Update Status
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Button variant="ghost" size="sm" title="View Invoice" onClick={() => viewInvoice(ad)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" title="Download Invoice">
+                        <Button variant="ghost" size="sm" title="Download Invoice" onClick={() => downloadInvoice(ad)}>
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>
