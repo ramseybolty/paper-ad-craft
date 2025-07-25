@@ -178,6 +178,25 @@ const AdForm = () => {
     setAgentSearchOpen(false);
   };
 
+  const isFormComplete = () => {
+    // Check basic required fields
+    if (!formData.title.trim()) return false;
+    if (!formData.category) return false;
+    if (!formData.page) return false;
+    if (!formData.clientName.trim()) return false;
+    if (!formData.clientContact.trim()) return false;
+    if (publishDates.length === 0) return false;
+    
+    // Check size requirements based on page type
+    if (formData.page === 'classifieds') {
+      if (!formData.words || parseInt(formData.words) < 10) return false;
+    } else {
+      if (!formData.columns || !formData.centimeters) return false;
+    }
+    
+    return true;
+  };
+
   const validateForm = () => {
     const errors = [];
     
@@ -831,19 +850,33 @@ Please sign and return this order copy.
                 type="button"
                 variant="outline" 
                 onClick={downloadOrderCopy}
-                className="flex items-center space-x-2"
+                disabled={!isFormComplete()}
+                className={cn(
+                  "flex items-center space-x-2",
+                  !isFormComplete() && "opacity-50 cursor-not-allowed"
+                )}
               >
                 <FileText className="h-4 w-4" />
                 <span>Download Order Copy</span>
               </Button>
               <p className="text-xs text-muted-foreground">
-                Generate order copy for client signature
+                {isFormComplete() 
+                  ? "Generate order copy for client signature" 
+                  : "Complete all required fields first"
+                }
               </p>
             </div>
             <div className="flex space-x-3">
               <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
                 <AlertDialogTrigger asChild>
-                  <Button type="submit" className="shadow-sm">
+                  <Button 
+                    type="submit" 
+                    disabled={!isFormComplete()}
+                    className={cn(
+                      "shadow-sm",
+                      !isFormComplete() && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
                     Submit Advertisement
                   </Button>
                 </AlertDialogTrigger>
