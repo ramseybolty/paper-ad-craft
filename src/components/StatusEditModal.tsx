@@ -27,28 +27,30 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
     }
   }, [ad, isOpen]);
 
-  // Check if ad has future publish dates
+  // Check if ad has future publish dates (DOP - Date of Publication)
   const hasFutureDates = () => {
-    if (!ad?.publishDates) return false;
+    if (!ad?.publishDates || !Array.isArray(ad.publishDates)) return false;
+    
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
     
     return ad.publishDates.some((dateStr: string) => {
       const publishDate = new Date(dateStr);
       publishDate.setHours(0, 0, 0, 0);
-      return publishDate >= today;
+      return publishDate >= today; // Include today as "future" (can still be published today)
     });
   };
 
-  // Check if user can edit this ad
+  // Check if user can edit this ad status (only for future DOP)
   const canEditStatus = () => {
-    if (isAdmin) return true;
-    return hasFutureDates();
+    if (isAdmin) return true; // Admin can edit any ad
+    return hasFutureDates(); // Non-admin can only edit ads with future publication dates
   };
 
-  // Get next future publish date
+  // Get next future publication date
   const getNextFutureDate = () => {
-    if (!ad?.publishDates) return null;
+    if (!ad?.publishDates || !Array.isArray(ad.publishDates)) return null;
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -56,7 +58,7 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
       .map((dateStr: string) => new Date(dateStr))
       .filter(date => {
         date.setHours(0, 0, 0, 0);
-        return date >= today;
+        return date >= today; // Include today and future dates
       })
       .sort((a, b) => a.getTime() - b.getTime());
     
@@ -67,7 +69,7 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
     if (!canEditStatus()) {
       toast({
         title: "Cannot Edit Status",
-        description: "You can only edit status for advertisements with future publish dates.",
+        description: "You can only edit status for advertisements with future publication dates (DOP).",
         variant: "destructive"
       });
       return;
@@ -184,10 +186,7 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
                 <span className="font-medium">Cannot Edit Status</span>
               </div>
               <div className="text-sm text-muted-foreground">
-                {isAdmin 
-                  ? "No restrictions for admin users."
-                  : "You can only edit status for advertisements with future publish dates."
-                }
+                You can only edit status for advertisements with future publication dates (DOP). This ad has no upcoming publications.
               </div>
             </div>
           )}
