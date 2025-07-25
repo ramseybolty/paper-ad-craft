@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle, Search, Filter } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -242,6 +243,10 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
       description: `Advertisement ID: ${adId} has been deleted successfully.`,
       variant: "destructive"
     });
+  };
+
+  const confirmDeleteAd = (adId: number) => {
+    handleDeleteAd(adId);
   };
 
   const stats = [
@@ -494,15 +499,37 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                          >
                            <Edit className="h-4 w-4" />
                          </Button>
-                         <Button 
-                           variant="ghost" 
-                           size="sm" 
-                           className="text-destructive hover:text-destructive" 
-                           title="Delete Advertisement"
-                           onClick={() => handleDeleteAd(ad.id)}
-                         >
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
+                         {showAllAds && (
+                           <AlertDialog>
+                             <AlertDialogTrigger asChild>
+                               <Button 
+                                 variant="ghost" 
+                                 size="sm" 
+                                 className="text-destructive hover:text-destructive" 
+                                 title="Delete Advertisement"
+                               >
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                             </AlertDialogTrigger>
+                             <AlertDialogContent>
+                               <AlertDialogHeader>
+                                 <AlertDialogTitle>Delete Advertisement</AlertDialogTitle>
+                                 <AlertDialogDescription>
+                                   Are you sure you want to delete this advertisement? This action cannot be undone.
+                                 </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                 <AlertDialogAction 
+                                   onClick={() => confirmDeleteAd(ad.id)}
+                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                 >
+                                   Delete
+                                 </AlertDialogAction>
+                               </AlertDialogFooter>
+                             </AlertDialogContent>
+                           </AlertDialog>
+                         )}
                        </div>
                     </td>
                   </tr>
