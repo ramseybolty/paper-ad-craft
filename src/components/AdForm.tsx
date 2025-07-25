@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ const AdForm = () => {
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [isClientFromDropdown, setIsClientFromDropdown] = useState(false);
   const [isAgentFromDropdown, setIsAgentFromDropdown] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -148,12 +150,51 @@ const AdForm = () => {
     { value: "6x20", label: "6 Columns x 20 cm (Full Width)", price: "$220" }
   ];
 
+  const resetForm = () => {
+    // Reset all form data to initial state
+    setFormData({
+      title: "",
+      category: "",
+      content: "",
+      page: "",
+      columns: "",
+      centimeters: "",
+      words: "",
+      clientName: "",
+      clientType: "individual",
+      clientContact: "",
+      agentName: "",
+      agentContact: ""
+    });
+    
+    // Reset dates to tomorrow only
+    const newTomorrow = new Date();
+    newTomorrow.setDate(newTomorrow.getDate() + 1);
+    newTomorrow.setHours(0, 0, 0, 0);
+    setPublishDates([newTomorrow]);
+    setTempDate(undefined);
+    
+    // Reset dropdown states
+    setIsClientFromDropdown(false);
+    setIsAgentFromDropdown(false);
+    setClientSearchOpen(false);
+    setAgentSearchOpen(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConfirmDialog(true);
+  };
+
+  const confirmSubmission = () => {
     toast({
-      title: "Advertisement Submitted",
-      description: "Your ad has been submitted for review and will be published soon.",
+      title: "Advertisement Submitted Successfully!",
+      description: "Your ad has been submitted for review and will be published on the selected dates.",
     });
+    
+    // Reset form for new entry
+    resetForm();
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -681,12 +722,28 @@ const AdForm = () => {
               <span>Ads are typically approved within 24 hours</span>
             </div>
             <div className="flex space-x-3">
-              <Button variant="outline" type="button">
-                Save as Draft
-              </Button>
-              <Button type="submit" className="shadow-sm">
-                Submit Advertisement
-              </Button>
+              <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button type="submit" className="shadow-sm">
+                    Submit Advertisement
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Advertisement Submission</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to submit this advertisement? Once submitted, it will be sent for review and approval. 
+                      The form will be cleared for your next entry after submission.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmSubmission}>
+                      Yes, Submit Advertisement
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </form>
