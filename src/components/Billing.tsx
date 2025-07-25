@@ -34,6 +34,7 @@ const Billing = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
+  const [agentFilter, setAgentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -57,6 +58,7 @@ const Billing = () => {
       title: "Beautiful Downtown Apartment for Rent",
       clientName: "John Smith",
       clientType: "individual",
+      agentName: "Raj Kumar",
       page: "front",
       size: "3x12",
       publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"],
@@ -87,6 +89,7 @@ const Billing = () => {
       title: "Professional Web Design Services",
       clientName: "ABC Digital Agency",
       clientType: "agency",
+      agentName: "Priya Sharma",
       page: "inner-color",
       size: "2x8",
       publishDates: ["2024-02-01", "2024-02-08"],
@@ -102,9 +105,10 @@ const Billing = () => {
     },
     {
       id: 3,
-      title: "2019 Honda Civic - Excellent Condition",
       clientName: "Sarah Johnson",
+      title: "2019 Honda Civic - Excellent Condition",
       clientType: "individual",
+      agentName: "Amit Singh",
       page: "back",
       size: "4x15",
       publishDates: ["2024-01-12", "2024-01-19"],
@@ -145,6 +149,7 @@ const Billing = () => {
       title: "Marketing Manager Position Available",
       clientName: "Prime Motors Ltd",
       clientType: "agency",
+      agentName: "Suresh Patel",
       page: "inner-bw",
       size: "5x20",
       publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"],
@@ -163,6 +168,7 @@ const Billing = () => {
       title: "Lost Cat - Reward Offered",
       clientName: "Maria Garcia",
       clientType: "individual",
+      agentName: "Raj Kumar",
       page: "classifieds",
       size: "25 words",
       publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"],
@@ -192,9 +198,11 @@ const Billing = () => {
   const filteredAds = adBillingData.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ad.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || ad.paymentStatus === statusFilter;
     const matchesClient = clientFilter === "all" || ad.clientType === clientFilter;
+    const matchesAgent = agentFilter === "all" || ad.agentName === agentFilter;
     
     // Date filter logic
     let matchesDate = true;
@@ -204,7 +212,7 @@ const Billing = () => {
       if (dateRange.to && adDate > dateRange.to) matchesDate = false;
     }
     
-    return matchesSearch && matchesStatus && matchesClient && matchesDate;
+    return matchesSearch && matchesStatus && matchesClient && matchesAgent && matchesDate;
   });
 
   const getStatusBadge = (status: string) => {
@@ -448,6 +456,19 @@ const Billing = () => {
                   <SelectItem value="all">All Clients</SelectItem>
                   <SelectItem value="individual">Individual</SelectItem>
                   <SelectItem value="agency">Agency</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={agentFilter} onValueChange={setAgentFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="Raj Kumar">Raj Kumar</SelectItem>
+                  <SelectItem value="Priya Sharma">Priya Sharma</SelectItem>
+                  <SelectItem value="Amit Singh">Amit Singh</SelectItem>
+                  <SelectItem value="Suresh Patel">Suresh Patel</SelectItem>
                 </SelectContent>
               </Select>
               
