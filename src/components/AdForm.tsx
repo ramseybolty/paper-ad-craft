@@ -31,14 +31,13 @@ const AdForm = () => {
     title: "",
     category: "",
     content: "",
-    contactInfo: "",
     columns: "",
     centimeters: "",
     clientName: "",
     clientType: "individual",
-    clientContact: "", // Separate client contact
+    clientContact: "",
     agentName: "",
-    agentContact: "" // Separate agent contact
+    agentContact: ""
   });
 
   // Expanded mock data for better testing
@@ -433,21 +432,6 @@ const AdForm = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contact">Advertisement Contact Information *</Label>
-            <Input
-              id="contact"
-              placeholder="Contact info to display in the ad (phone, email, address)"
-              value={formData.contactInfo}
-              onChange={(e) => setFormData({...formData, contactInfo: e.target.value})}
-              className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              This contact info will be displayed in the advertisement for readers to reach out
-            </p>
-          </div>
-
           {/* Publication Dates - Multiple Date Selection */}
           <div className="space-y-4">
             <Label className="text-base font-semibold">Publication Dates *</Label>
@@ -595,7 +579,7 @@ const AdForm = () => {
             <ImageIcon className="h-5 w-5 text-accent" />
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Add Images (Optional)</p>
-              <p className="text-xs text-muted-foreground">Upload images to make your ad more attractive</p>
+              <p className="text-xs text-muted-foreground">Upload Advertisement design</p>
             </div>
             <Button variant="outline" size="sm">
               Upload
