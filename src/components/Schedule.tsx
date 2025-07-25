@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,17 +29,26 @@ import { useToast } from "@/hooks/use-toast";
 
 const Schedule = () => {
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  
+  // Set default date to tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(tomorrow);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pageFilter, setPageFilter] = useState("all");
+  const [selectedAds, setSelectedAds] = useState<number[]>([]);
+
+  // Check if selected date is past
+  const isPastDate = selectedDate ? selectedDate.getTime() < new Date().setHours(0, 0, 0, 0) : false;
 
   // Date formatting utility
   const formatDate = (date: string | Date) => {
     return format(new Date(date), "dd/MM/yyyy");
   };
 
-  // Mock scheduled ads data
+  // Mock scheduled ads data with special instructions
   const scheduledAds = [
     {
       id: 1,
@@ -47,12 +57,13 @@ const Schedule = () => {
       agentName: "Raj Kumar",
       page: "front",
       size: "3x12",
-      publishDate: "2024-02-15",
+      publishDate: "2024-02-16",
       publishTime: "08:00",
       status: "scheduled",
       category: "real-estate",
       priority: "high",
       notes: "Premium location, highlight contact info",
+      specialInstructions: "Bold heading, red border, include virtual tour QR code",
       adContent: "Spacious 3BHK apartment with modern amenities..."
     },
     {
@@ -62,12 +73,13 @@ const Schedule = () => {
       agentName: "Priya Sharma",
       page: "inner-color",
       size: "2x8",
-      publishDate: "2024-02-15",
+      publishDate: "2024-02-16",
       publishTime: "09:30",
       status: "ready",
       category: "services",
       priority: "medium",
       notes: "Include company logo, colorful design",
+      specialInstructions: "Use brand colors blue/orange, include website URL prominently",
       adContent: "Professional web design at affordable prices..."
     },
     {
@@ -83,6 +95,7 @@ const Schedule = () => {
       category: "automotive",
       priority: "medium",
       notes: "Include high-quality car images",
+      specialInstructions: "Place near automotive section, include price in bold",
       adContent: "Well-maintained Honda Civic, single owner..."
     },
     {
@@ -98,6 +111,7 @@ const Schedule = () => {
       category: "jobs",
       priority: "high",
       notes: "Urgent hiring, bold formatting needed",
+      specialInstructions: "Top of jobs section, highlighted border, include salary range",
       adContent: "Experienced marketing manager required..."
     },
     {
@@ -113,9 +127,55 @@ const Schedule = () => {
       category: "personal",
       priority: "urgent",
       notes: "Include cat photo, emergency contact",
+      specialInstructions: "Enlarge font, add emergency contact box, place at top",
       adContent: "Missing tabby cat, last seen near Central Park..."
     }
   ];
+
+  // Multi-select and bulk action functions
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedAds(filteredAds.map(ad => ad.id));
+    } else {
+      setSelectedAds([]);
+    }
+  };
+
+  const handleSelectAd = (adId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedAds([...selectedAds, adId]);
+    } else {
+      setSelectedAds(selectedAds.filter(id => id !== adId));
+    }
+  };
+
+  const handleBulkPublish = () => {
+    if (isPastDate) {
+      toast({
+        title: "Action Not Allowed",
+        description: "Cannot change status for past dates",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedAds.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select ads to publish",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // In real implementation, this would update the backend
+    console.log(`Publishing ${selectedAds.length} ads`);
+    toast({
+      title: "Bulk Action Completed",
+      description: `${selectedAds.length} ads marked as published`,
+    });
+    setSelectedAds([]);
+  };
 
   // Filter logic
   const filteredAds = scheduledAds.filter((ad) => {
@@ -367,6 +427,45 @@ const Schedule = () => {
         </CardContent>
       </Card>
 
+      {/* Bulk Actions Bar */}
+      {selectedAds.length > 0 && (
+        <Card className="shadow-card bg-primary/5 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Badge variant="secondary" className="px-3">
+                  {selectedAds.length} selected
+                </Badge>
+                {isPastDate && (
+                  <Badge variant="destructive" className="px-3">
+                    Past date - Actions disabled
+                  </Badge>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedAds([])}
+                >
+                  Clear Selection
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={handleBulkPublish}
+                  disabled={isPastDate}
+                  className="bg-success hover:bg-success/90"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Mark as Published
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Schedule Table */}
       <Card className="shadow-card">
         <CardHeader>
@@ -385,10 +484,19 @@ const Schedule = () => {
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
+                  <th className="text-left p-4 font-medium text-foreground w-12">
+                    <Checkbox
+                      checked={selectedAds.length === filteredAds.length && filteredAds.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      disabled={isPastDate}
+                      aria-label="Select all ads"
+                    />
+                  </th>
                   <th className="text-left p-4 font-medium text-foreground">Time</th>
                   <th className="text-left p-4 font-medium text-foreground">Advertisement</th>
                   <th className="text-left p-4 font-medium text-foreground">Client & Agent</th>
                   <th className="text-left p-4 font-medium text-foreground">Page & Size</th>
+                  <th className="text-left p-4 font-medium text-foreground">Special Instructions</th>
                   <th className="text-left p-4 font-medium text-foreground">Status</th>
                   <th className="text-left p-4 font-medium text-foreground">Priority</th>
                   <th className="text-right p-4 font-medium text-foreground">Actions</th>
@@ -397,6 +505,14 @@ const Schedule = () => {
               <tbody>
                 {filteredAds.map((ad) => (
                   <tr key={ad.id} className="border-b hover:bg-muted/30 transition-colors">
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedAds.includes(ad.id)}
+                        onCheckedChange={(checked) => handleSelectAd(ad.id, checked as boolean)}
+                        disabled={isPastDate}
+                        aria-label={`Select ${ad.title}`}
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -434,6 +550,11 @@ const Schedule = () => {
                       </div>
                     </td>
                     <td className="p-4">
+                      <div className="max-w-48">
+                        <p className="text-xs text-foreground font-medium">{ad.specialInstructions}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
                       {getStatusBadge(ad.status)}
                     </td>
                     <td className="p-4">
@@ -444,10 +565,10 @@ const Schedule = () => {
                         <Button variant="ghost" size="sm" title="View Details">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" title="Edit Schedule">
+                        <Button variant="ghost" size="sm" title="Edit Schedule" disabled={isPastDate}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" title="Cancel" className="text-destructive hover:text-destructive">
+                        <Button variant="ghost" size="sm" title="Cancel" className="text-destructive hover:text-destructive" disabled={isPastDate}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
