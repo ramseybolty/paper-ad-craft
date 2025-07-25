@@ -9,7 +9,7 @@ import {
   Receipt, 
   Download, 
   Calendar,
-  DollarSign,
+  IndianRupee,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -22,7 +22,8 @@ import {
   Filter
 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import PaymentHistory from "./PaymentHistory";
 
 const Billing = () => {
   const { toast } = useToast();
@@ -34,11 +35,12 @@ const Billing = () => {
   const [paymentUpdateAd, setPaymentUpdateAd] = useState<any>(null);
   const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [receiptNumber, setReceiptNumber] = useState("");
+  const [paymentHistoryAd, setPaymentHistoryAd] = useState<any>(null);
   
   // Mock user role - in real implementation this would come from auth context
   const currentUserRole = "admin"; // admin, staff, accountant
 
-  // Mock ads with billing information
+  // Mock ads with billing information and enhanced payment structure
   const adBillingData = [
     {
       id: 1,
@@ -48,16 +50,27 @@ const Billing = () => {
       page: "front",
       size: "3x12",
       publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"],
-      baseAmount: 1200.00,
+      baseAmount: 120000.00, // INR
       discount: 0,
-      subtotal: 1200.00,
-      gst: 60.00,
-      totalAmount: 1260.00,
-      paidAmount: 1260.00,
+      subtotal: 120000.00,
+      gst: 6000.00, // 5% GST
+      totalAmount: 126000.00,
       paymentStatus: "paid",
       invoiceNumber: "INV-2024-001",
       dueDate: "2024-01-10",
-      paidDate: "2024-01-09"
+      payments: [
+        {
+          id: 1,
+          amount: 126000.00,
+          date: "2024-01-09",
+          receiptNumber: "RCP-001",
+          utrNumber: "UTR123456789",
+          method: "bank_transfer",
+          addedBy: "Admin User",
+          addedByRole: "admin",
+          notes: "Full payment received"
+        }
+      ]
     },
     {
       id: 2,
@@ -67,16 +80,15 @@ const Billing = () => {
       page: "inner-color",
       size: "2x8",
       publishDates: ["2024-02-01", "2024-02-08"],
-      baseAmount: 800.00,
-      discount: 80.00,
-      subtotal: 720.00,
-      gst: 36.00,
-      totalAmount: 756.00,
-      paidAmount: 0,
+      baseAmount: 80000.00,
+      discount: 8000.00,
+      subtotal: 72000.00,
+      gst: 3600.00,
+      totalAmount: 75600.00,
       paymentStatus: "pending",
-      invoiceNumber: "INV-2024-002", 
+      invoiceNumber: "INV-2024-002",
       dueDate: "2024-02-15",
-      paidDate: null
+      payments: []
     },
     {
       id: 3,
@@ -86,16 +98,37 @@ const Billing = () => {
       page: "back",
       size: "4x15",
       publishDates: ["2024-01-12", "2024-01-19"],
-      baseAmount: 1500.00,
-      discount: 150.00,
-      subtotal: 1350.00,
-      gst: 67.50,
-      totalAmount: 1417.50,
-      paidAmount: 500.00,
+      baseAmount: 150000.00,
+      discount: 15000.00,
+      subtotal: 135000.00,
+      gst: 6750.00,
+      totalAmount: 141750.00,
       paymentStatus: "partial",
       invoiceNumber: "INV-2024-003",
       dueDate: "2024-01-25",
-      paidDate: null
+      payments: [
+        {
+          id: 2,
+          amount: 50000.00,
+          date: "2024-01-20",
+          receiptNumber: "RCP-002",
+          method: "cash",
+          addedBy: "Staff User",
+          addedByRole: "staff",
+          notes: "Partial payment"
+        },
+        {
+          id: 3,
+          amount: 30000.00,
+          date: "2024-01-22",
+          receiptNumber: "RCP-003",
+          utrNumber: "UTR987654321",
+          method: "upi",
+          addedBy: "Accountant User",
+          addedByRole: "accountant",
+          notes: "Second installment"
+        }
+      ]
     },
     {
       id: 4,
@@ -105,16 +138,15 @@ const Billing = () => {
       page: "inner-bw",
       size: "5x20",
       publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"],
-      baseAmount: 900.00,
+      baseAmount: 90000.00,
       discount: 0,
-      subtotal: 900.00,
-      gst: 45.00,
-      totalAmount: 945.00,
-      paidAmount: 0,
+      subtotal: 90000.00,
+      gst: 4500.00,
+      totalAmount: 94500.00,
       paymentStatus: "overdue",
       invoiceNumber: "INV-2024-004",
       dueDate: "2024-01-20",
-      paidDate: null
+      payments: []
     },
     {
       id: 5,
@@ -124,16 +156,25 @@ const Billing = () => {
       page: "classifieds",
       size: "25 words",
       publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"],
-      baseAmount: 45.00,
+      baseAmount: 4500.00,
       discount: 0,
-      subtotal: 45.00,
-      gst: 2.25,
-      totalAmount: 47.25,
-      paidAmount: 47.25,
+      subtotal: 4500.00,
+      gst: 225.00,
+      totalAmount: 4725.00,
       paymentStatus: "paid",
       invoiceNumber: "INV-2024-005",
       dueDate: "2024-01-18",
-      paidDate: "2024-01-17"
+      payments: [
+        {
+          id: 4,
+          amount: 4725.00,
+          date: "2024-01-17",
+          receiptNumber: "RCP-004",
+          method: "cash",
+          addedBy: "Staff User",
+          addedByRole: "staff"
+        }
+      ]
     }
   ];
 
@@ -266,13 +307,18 @@ const Billing = () => {
     });
   };
 
+  // Helper function to calculate paid amount from payments array
+  const calculatePaidAmount = (payments: any[]) => {
+    return payments.reduce((sum, payment) => sum + payment.amount, 0);
+  };
+
   // Summary calculations
   const totalInvoiced = filteredAds.reduce((sum, ad) => sum + ad.totalAmount, 0);
-  const totalPaid = filteredAds.reduce((sum, ad) => sum + ad.paidAmount, 0);
+  const totalPaid = filteredAds.reduce((sum, ad) => sum + calculatePaidAmount(ad.payments), 0);
   const totalOutstanding = totalInvoiced - totalPaid;
   const totalOverdue = filteredAds
     .filter(ad => ad.paymentStatus === "overdue")
-    .reduce((sum, ad) => sum + (ad.totalAmount - ad.paidAmount), 0);
+    .reduce((sum, ad) => sum + (ad.totalAmount - calculatePaidAmount(ad.payments)), 0);
 
   return (
     <div className="space-y-6">
@@ -304,11 +350,11 @@ const Billing = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Invoiced</p>
-                <p className="text-2xl font-bold text-foreground">${totalInvoiced.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-foreground">₹{totalInvoiced.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">Inc. 5% GST</p>
               </div>
               <div className="p-2 bg-primary/10 rounded-lg">
-                <DollarSign className="h-5 w-5 text-primary" />
+                <IndianRupee className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -319,7 +365,7 @@ const Billing = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Paid</p>
-                <p className="text-2xl font-bold text-success">${totalPaid.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-success">₹{totalPaid.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">Received</p>
               </div>
               <div className="p-2 bg-success/10 rounded-lg">
@@ -334,7 +380,7 @@ const Billing = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Outstanding</p>
-                <p className="text-2xl font-bold text-warning">${totalOutstanding.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-warning">₹{totalOutstanding.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">Pending</p>
               </div>
               <div className="p-2 bg-warning/10 rounded-lg">
@@ -349,7 +395,7 @@ const Billing = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-bold text-destructive">${totalOverdue.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-destructive">₹{totalOverdue.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">Action needed</p>
               </div>
               <div className="p-2 bg-destructive/10 rounded-lg">
@@ -440,23 +486,33 @@ const Billing = () => {
                         <p className="text-xs text-muted-foreground capitalize">{ad.clientType}</p>
                       </div>
                     </td>
-                    <td className="p-4 text-right text-foreground">${ad.baseAmount.toFixed(2)}</td>
+                    <td className="p-4 text-right text-foreground">₹{ad.baseAmount.toFixed(2)}</td>
                     <td className="p-4 text-right">
                       {ad.discount > 0 ? (
-                        <span className="text-success">-${ad.discount.toFixed(2)}</span>
+                        <span className="text-success">-₹{ad.discount.toFixed(2)}</span>
                       ) : (
-                        <span className="text-muted-foreground">$0.00</span>
+                        <span className="text-muted-foreground">₹0.00</span>
                       )}
                     </td>
-                    <td className="p-4 text-right text-foreground">${ad.gst.toFixed(2)}</td>
-                    <td className="p-4 text-right font-medium text-foreground">${ad.totalAmount.toFixed(2)}</td>
+                    <td className="p-4 text-right text-foreground">₹{ad.gst.toFixed(2)}</td>
+                    <td className="p-4 text-right font-medium text-foreground">₹{ad.totalAmount.toFixed(2)}</td>
                     <td className="p-4">
                       <div className="space-y-1">
                         {getStatusBadge(ad.paymentStatus)}
                         {ad.paymentStatus === "partial" && (
-                          <p className="text-xs text-muted-foreground">
-                            Paid: ${ad.paidAmount.toFixed(2)} / ${ad.totalAmount.toFixed(2)}
-                          </p>
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">
+                              Paid: ₹{calculatePaidAmount(ad.payments).toFixed(2)} / ₹{ad.totalAmount.toFixed(2)}
+                            </p>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-xs h-6 px-2"
+                              onClick={() => setPaymentHistoryAd(ad)}
+                            >
+                              View Payments
+                            </Button>
+                          </div>
                         )}
                         <p className="text-xs text-muted-foreground">
                           Due: {new Date(ad.dueDate).toLocaleDateString()}
@@ -477,7 +533,7 @@ const Billing = () => {
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
-                                <Label>Base Amount: ${ad.baseAmount.toFixed(2)}</Label>
+                                <Label>Base Amount: ₹{ad.baseAmount.toFixed(2)}</Label>
                               </div>
                               <div className="space-y-2">
                                 <Label>Discount Type</Label>
@@ -496,7 +552,7 @@ const Billing = () => {
                                     />
                                   </div>
                                   <div>
-                                    <Label htmlFor="discount-amount">Fixed Amount ($)</Label>
+                                    <Label htmlFor="discount-amount">Fixed Amount (₹)</Label>
                                     <Input
                                       id="discount-amount"
                                       type="number"
@@ -513,30 +569,30 @@ const Billing = () => {
                               <div className="space-y-2 p-3 bg-muted/30 rounded">
                                 <div className="flex justify-between text-sm">
                                   <span>Base Amount:</span>
-                                  <span>${ad.baseAmount.toFixed(2)}</span>
+                                  <span>₹{ad.baseAmount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span>Discount:</span>
                                   <span className="text-success">
-                                    -${calculateDiscount(ad.baseAmount, discountPercent, discountAmount).toFixed(2)}
+                                    -₹{calculateDiscount(ad.baseAmount, discountPercent, discountAmount).toFixed(2)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span>Subtotal:</span>
                                   <span>
-                                    ${(ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)).toFixed(2)}
+                                    ₹{(ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)).toFixed(2)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span>GST (5%):</span>
                                   <span>
-                                    ${((ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)) * 0.05).toFixed(2)}
+                                    ₹{((ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)) * 0.05).toFixed(2)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between font-medium border-t pt-2">
                                   <span>Total Amount:</span>
                                   <span>
-                                    ${((ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)) * 1.05).toFixed(2)}
+                                    ₹{((ad.baseAmount - calculateDiscount(ad.baseAmount, discountPercent, discountAmount)) * 1.05).toFixed(2)}
                                   </span>
                                 </div>
                               </div>
@@ -564,8 +620,8 @@ const Billing = () => {
                               <div>
                                 <Label>Current Status: {getStatusBadge(ad.paymentStatus)}</Label>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                  Total Amount: ${ad.totalAmount.toFixed(2)} | Paid: ${ad.paidAmount.toFixed(2)}
-                                </p>
+                                   Total Amount: ₹{ad.totalAmount.toFixed(2)} | Paid: ₹{calculatePaidAmount(ad.payments).toFixed(2)}
+                                 </p>
                               </div>
                               
                               <div className="space-y-2">
@@ -634,6 +690,33 @@ const Billing = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment History Modal/Section */}
+      {paymentHistoryAd && (
+        <Dialog open={!!paymentHistoryAd} onOpenChange={() => setPaymentHistoryAd(null)}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Payment Details - {paymentHistoryAd.invoiceNumber}</DialogTitle>
+            </DialogHeader>
+            <PaymentHistory
+              adId={paymentHistoryAd.id}
+              invoiceNumber={paymentHistoryAd.invoiceNumber}
+              totalAmount={paymentHistoryAd.totalAmount}
+              payments={paymentHistoryAd.payments}
+              onAddPayment={(payment) => {
+                // In real implementation, this would add payment to backend
+                console.log('Adding payment:', payment);
+                toast({
+                  title: "Payment Added",
+                  description: `Payment of ₹${payment.amount.toFixed(2)} added successfully`,
+                });
+                // Close dialog after adding payment
+                setPaymentHistoryAd(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
