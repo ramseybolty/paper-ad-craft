@@ -479,8 +479,14 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredAds.map((ad) => (
-                  <tr key={ad.id} className="border-b hover:bg-muted/30 transition-colors">
+                {filteredAds.map((ad) => {
+                  const hasEditableDates = hasEditablePublications(ad);
+                  const isPastAd = !hasEditableDates;
+                  
+                  return (
+                  <tr key={ad.id} className={`border-b transition-colors ${
+                    isPastAd ? 'opacity-50 bg-muted/20' : 'hover:bg-muted/30'
+                  }`}>
                     <td className="p-4">
                       <div>
                         <p className="font-medium text-foreground truncate max-w-48">{ad.title}</p>
@@ -558,14 +564,16 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                          >
                            <Eye className="h-4 w-4" />
                          </Button>
-                         <Button 
-                           variant="ghost" 
-                           size="sm" 
-                           title={showAllAds ? "Edit Advertisement" : "Edit Status"}
-                           onClick={() => handleEditAd(ad.id)}
-                         >
-                           <Edit className="h-4 w-4" />
-                         </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title={showAllAds ? "Edit Advertisement" : isPastAd ? "Cannot edit past DOP dates" : "Edit Status"}
+                            onClick={() => handleEditAd(ad.id)}
+                            disabled={!showAllAds && isPastAd}
+                            className={!showAllAds && isPastAd ? "cursor-not-allowed opacity-50" : ""}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                          {showAllAds && (
                            <AlertDialog>
                              <AlertDialogTrigger asChild>
@@ -599,8 +607,9 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                          )}
                        </div>
                     </td>
-                  </tr>
-                ))}
+                   </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
