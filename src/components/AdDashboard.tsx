@@ -11,10 +11,14 @@ const AdDashboard = () => {
       category: "Real Estate",
       status: "published",
       views: 234,
-      size: "medium",
-      price: "$65",
+      columns: "3",
+      centimeters: "12",
+      clientName: "John Smith",
+      clientType: "individual",
+      agentName: "Mike Wilson",
+      agentContact: "mike@newsagency.com",
       publishDate: "2024-01-15",
-      expiryDate: "2024-02-15"
+      endDate: "2024-02-15"
     },
     {
       id: 2,
@@ -22,10 +26,14 @@ const AdDashboard = () => {
       category: "Services",
       status: "pending",
       views: 0,
-      size: "small",
-      price: "$25",
+      columns: "2",
+      centimeters: "8",
+      clientName: "ABC Digital Agency",
+      clientType: "agency",
+      agentName: "",
+      agentContact: "",
       publishDate: null,
-      expiryDate: null
+      endDate: null
     },
     {
       id: 3,
@@ -33,10 +41,14 @@ const AdDashboard = () => {
       category: "Automotive",
       status: "published",
       views: 156,
-      size: "large",
-      price: "$120",
+      columns: "4",
+      centimeters: "15",
+      clientName: "Sarah Johnson",
+      clientType: "individual",
+      agentName: "Lisa Chen",
+      agentContact: "lisa@adpartners.com",
       publishDate: "2024-01-12",
-      expiryDate: "2024-01-26"
+      endDate: "2024-01-26"
     },
     {
       id: 4,
@@ -44,10 +56,14 @@ const AdDashboard = () => {
       category: "Jobs",
       status: "expired",
       views: 89,
-      size: "medium",
-      price: "$65",
+      columns: "5",
+      centimeters: "20",
+      clientName: "Prime Motors Ltd",
+      clientType: "agency",
+      agentName: "David Brown",
+      agentContact: "david@mediagroup.com",
       publishDate: "2024-01-01",
-      expiryDate: "2024-01-14"
+      endDate: "2024-01-14"
     }
   ];
 
@@ -104,11 +120,13 @@ const AdDashboard = () => {
               <thead className="border-b bg-muted/50">
                 <tr>
                   <th className="text-left p-4 font-medium text-foreground">Title</th>
+                  <th className="text-left p-4 font-medium text-foreground">Client</th>
                   <th className="text-left p-4 font-medium text-foreground">Category</th>
                   <th className="text-left p-4 font-medium text-foreground">Status</th>
                   <th className="text-left p-4 font-medium text-foreground">Size</th>
                   <th className="text-left p-4 font-medium text-foreground">Views</th>
-                  <th className="text-left p-4 font-medium text-foreground">Expires</th>
+                  <th className="text-left p-4 font-medium text-foreground">Agent</th>
+                  <th className="text-left p-4 font-medium text-foreground">End Date</th>
                   <th className="text-right p-4 font-medium text-foreground">Actions</th>
                 </tr>
               </thead>
@@ -118,7 +136,15 @@ const AdDashboard = () => {
                     <td className="p-4">
                       <div>
                         <p className="font-medium text-foreground truncate max-w-48">{ad.title}</p>
-                        <p className="text-sm text-muted-foreground">{ad.price}</p>
+                        <p className="text-sm text-muted-foreground">Published: {ad.publishDate || "Not set"}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div>
+                        <p className="font-medium text-foreground">{ad.clientName}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {ad.clientType === "individual" ? "Individual" : "Agency"}
+                        </Badge>
                       </div>
                     </td>
                     <td className="p-4">
@@ -127,15 +153,35 @@ const AdDashboard = () => {
                     <td className="p-4">
                       {getStatusBadge(ad.status)}
                     </td>
-                    <td className="p-4 text-muted-foreground capitalize">{ad.size}</td>
+                    <td className="p-4">
+                      <div className="text-muted-foreground">
+                        {ad.columns && ad.centimeters ? (
+                          <span>{ad.columns}×{ad.centimeters}cm</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Auto</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-1">
                         <Eye className="h-4 w-4 text-muted-foreground" />
                         <span className="text-foreground">{ad.views}</span>
                       </div>
                     </td>
+                    <td className="p-4">
+                      <div className="text-sm">
+                        {ad.agentName ? (
+                          <div>
+                            <p className="font-medium text-foreground">{ad.agentName}</p>
+                            <p className="text-xs text-muted-foreground">{ad.agentContact}</p>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No agent</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-4 text-muted-foreground">
-                      {ad.expiryDate || "N/A"}
+                      {ad.endDate || "N/A"}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end space-x-2">
