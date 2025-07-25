@@ -33,10 +33,12 @@ const AdForm = () => {
   ];
 
   const adSizes = [
-    { value: "small", label: "Small (2x2 inches)", price: "$25" },
-    { value: "medium", label: "Medium (4x3 inches)", price: "$65" },
-    { value: "large", label: "Large (6x4 inches)", price: "$120" },
-    { value: "full", label: "Full Column (8x6 inches)", price: "$200" }
+    { value: "1x5", label: "1 Column x 5 cm", price: "$15" },
+    { value: "2x8", label: "2 Columns x 8 cm", price: "$35" },
+    { value: "3x10", label: "3 Columns x 10 cm", price: "$65" },
+    { value: "4x12", label: "4 Columns x 12 cm", price: "$95" },
+    { value: "5x15", label: "5 Columns x 15 cm", price: "$140" },
+    { value: "6x20", label: "6 Columns x 20 cm (Full Width)", price: "$220" }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -127,7 +129,22 @@ const AdForm = () => {
           </div>
 
           <div className="space-y-4">
-            <Label>Advertisement Size & Pricing</Label>
+            <Label>Advertisement Size & Pricing (Optional)</Label>
+            <p className="text-sm text-muted-foreground">Select a size for your advertisement. If no size is selected, we'll use the optimal size based on your content.</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-muted-foreground">
+                {formData.size ? `Selected: ${adSizes.find(s => s.value === formData.size)?.label}` : "No size selected (auto-size)"}
+              </div>
+              {formData.size && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setFormData({...formData, size: ""})}
+                >
+                  Clear Selection
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {adSizes.map((size) => (
                 <div 
@@ -142,7 +159,7 @@ const AdForm = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-medium text-foreground">{size.label}</h4>
-                      <p className="text-sm text-muted-foreground">Perfect for {size.value} ads</p>
+                      <p className="text-sm text-muted-foreground">Newspaper column format</p>
                     </div>
                     <Badge variant={formData.size === size.value ? "default" : "secondary"} className="flex items-center space-x-1">
                       <DollarSign className="h-3 w-3" />
