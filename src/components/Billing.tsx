@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { 
   Receipt, 
   Download, 
-  Calendar,
+  CalendarIcon,
   IndianRupee,
   AlertCircle,
   CheckCircle,
@@ -19,16 +21,24 @@ import {
   Calculator,
   FileText,
   Search,
-  Filter
+  Filter,
+  Users,
+  User
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import PaymentHistory from "./PaymentHistory";
+import { format } from "date-fns";
 
 const Billing = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [clientFilter, setClientFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [selectedAd, setSelectedAd] = useState<any>(null);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
