@@ -16,16 +16,17 @@ import { cn } from "@/lib/utils";
 
 const AdForm = () => {
   const { toast } = useToast();
-  const [publishDates, setPublishDates] = useState<Date[]>([]);
+  
+  // Set tomorrow as default date
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const [publishDates, setPublishDates] = useState<Date[]>([tomorrow]); // Default to tomorrow
   const [tempDate, setTempDate] = useState<Date>();
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [isClientFromDropdown, setIsClientFromDropdown] = useState(false);
   const [isAgentFromDropdown, setIsAgentFromDropdown] = useState(false);
-  
-  // Set tomorrow as default date
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -549,13 +550,16 @@ const AdForm = () => {
                     <Input
                       id="words"
                       type="number"
-                      min="1"
-                      placeholder="Number of words in the classified ad"
+                      min="10"
+                      placeholder="Number of words in the classified ad (minimum 10)"
                       value={formData.words}
                       onChange={(e) => setFormData({...formData, words: e.target.value})}
                       className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                       required
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Minimum 10 words required for classified advertisements
+                    </p>
                   </div>
                   
                   {formData.words && (
