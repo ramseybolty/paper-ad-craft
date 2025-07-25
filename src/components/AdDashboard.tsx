@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
 import EditAdModal from "./EditAdModal";
+import StatusEditModal from "./StatusEditModal";
 
 interface AdDashboardProps {
   showAllAds?: boolean;
@@ -26,6 +27,7 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   const [ads, setAds] = useState<any[]>([]);
   const [editingAd, setEditingAd] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isStatusEditModalOpen, setIsStatusEditModalOpen] = useState(false);
 
   // Load ads from localStorage on component mount
   useEffect(() => {
@@ -229,7 +231,13 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
     const adToEdit = ads.find(ad => ad.id === adId);
     if (adToEdit) {
       setEditingAd(adToEdit);
-      setIsEditModalOpen(true);
+      if (showAllAds) {
+        // Full edit modal for All Ads page
+        setIsEditModalOpen(true);
+      } else {
+        // Status-only edit modal for My Ads page
+        setIsStatusEditModalOpen(true);
+      }
     }
   };
 
@@ -272,6 +280,14 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
     setEditingAd(null);
     setIsEditModalOpen(false);
   };
+
+  const handleCloseStatusEditModal = () => {
+    setEditingAd(null);
+    setIsStatusEditModalOpen(false);
+  };
+
+  // Check if current user is admin (for demo purposes, this could come from auth context)
+  const isAdmin = true; // In real app, this would come from authentication context
 
   const stats = [
     { label: "Total Ads", value: "12", icon: BarChart3, color: "text-primary" },
@@ -518,7 +534,7 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                          <Button 
                            variant="ghost" 
                            size="sm" 
-                           title="Edit Advertisement"
+                           title={showAllAds ? "Edit Advertisement" : "Edit Status"}
                            onClick={() => handleEditAd(ad.id)}
                          >
                            <Edit className="h-4 w-4" />
@@ -564,12 +580,21 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
+      {/* Edit Modal - Full edit for All Ads page */}
       <EditAdModal
         ad={editingAd}
         isOpen={isEditModalOpen}
         onClose={handleCloseEditModal}
         onSave={handleSaveEditedAd}
+      />
+
+      {/* Status Edit Modal - Status only for My Ads page */}
+      <StatusEditModal
+        ad={editingAd}
+        isOpen={isStatusEditModalOpen}
+        onClose={handleCloseStatusEditModal}
+        onSave={handleSaveEditedAd}
+        isAdmin={isAdmin}
       />
     </div>
   );
