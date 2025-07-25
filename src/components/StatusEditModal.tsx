@@ -28,16 +28,19 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
   }, [ad, isOpen]);
 
   // Check if ad has future publish dates (DOP - Date of Publication)
+  // DOP must be greater than yesterday's date
   const hasFutureDates = () => {
     if (!ad?.publishDates || !Array.isArray(ad.publishDates)) return false;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 59, 59, 999); // End of yesterday
     
     return ad.publishDates.some((dateStr: string) => {
       const publishDate = new Date(dateStr);
-      publishDate.setHours(0, 0, 0, 0);
-      return publishDate >= today; // Include today as "future" (can still be published today)
+      publishDate.setHours(0, 0, 0, 0); // Start of publish date
+      console.log('Checking date:', dateStr, 'Publish date:', publishDate, 'Yesterday:', yesterday, 'Is future:', publishDate > yesterday);
+      return publishDate > yesterday; // Must be greater than yesterday (today or future)
     });
   };
 
@@ -47,18 +50,19 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
     return hasFutureDates(); // Non-admin can only edit ads with future publication dates
   };
 
-  // Get next future publication date
+  // Get next future publication date (greater than yesterday)
   const getNextFutureDate = () => {
     if (!ad?.publishDates || !Array.isArray(ad.publishDates)) return null;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 59, 59, 999); // End of yesterday
     
     const futureDates = ad.publishDates
       .map((dateStr: string) => new Date(dateStr))
       .filter(date => {
         date.setHours(0, 0, 0, 0);
-        return date >= today; // Include today and future dates
+        return date > yesterday; // Must be greater than yesterday
       })
       .sort((a, b) => a.getTime() - b.getTime());
     
@@ -143,16 +147,21 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
             <div className="space-y-1">
               {ad.publishDates?.map((dateStr: string, index: number) => {
                 const date = new Date(dateStr);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                yesterday.setHours(23, 59, 59, 999);
                 date.setHours(0, 0, 0, 0);
-                const isFuture = date >= today;
+                const isFuture = date > yesterday; // Must be greater than yesterday
                 
                 return (
-                  <div key={index} className={`text-xs flex items-center gap-2 ${isFuture ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <div key={index} className={`text-xs flex items-center gap-2 ${isFuture ? 'text-foreground font-medium' : 'text-muted-foreground line-through'}`}>
                     <Calendar className="h-3 w-3" />
                     <span>{formatDate(dateStr)}</span>
-                    {isFuture && <Badge variant="outline" className="text-xs py-0">Future</Badge>}
+                    {isFuture ? (
+                      <Badge variant="outline" className="text-xs py-0">Editable</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs py-0">Past</Badge>
+                    )}
                   </div>
                 );
               })}
@@ -186,7 +195,7 @@ const StatusEditModal = ({ ad, isOpen, onClose, onSave, isAdmin = false }: Statu
                 <span className="font-medium">Cannot Edit Status</span>
               </div>
               <div className="text-sm text-muted-foreground">
-                You can only edit status for advertisements with future publication dates (DOP). This ad has no upcoming publications.
+                You can only edit status for advertisements with publication dates greater than yesterday. This ad has no upcoming publications.
               </div>
             </div>
           )}
