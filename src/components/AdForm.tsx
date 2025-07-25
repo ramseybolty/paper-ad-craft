@@ -178,9 +178,110 @@ const AdForm = () => {
     setAgentSearchOpen(false);
   };
 
+  const validateForm = () => {
+    const errors = [];
+    
+    if (!formData.title.trim()) errors.push("Title is required");
+    if (!formData.category) errors.push("Category is required");
+    if (!formData.page) errors.push("Page selection is required");
+    if (!formData.clientName.trim()) errors.push("Client name is required");
+    if (!formData.clientContact.trim()) errors.push("Client contact is required");
+    if (publishDates.length === 0) errors.push("At least one publication date is required");
+    
+    if (formData.page === 'classifieds') {
+      if (!formData.words || parseInt(formData.words) < 10) {
+        errors.push("At least 10 words required for classified ads");
+      }
+    } else {
+      if (!formData.columns || !formData.centimeters) {
+        errors.push("Both columns and height are required");
+      }
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Please complete all required fields",
+        description: validationErrors.join(", "),
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setShowConfirmDialog(true);
+  };
+
+  const downloadOrderCopy = () => {
+    // Generate order copy data
+    const orderData = {
+      title: formData.title,
+      category: formData.category,
+      page: formData.page,
+      client: `${formData.clientName} (${formData.clientType})`,
+      clientContact: formData.clientContact,
+      agent: formData.agentName || "None",
+      agentContact: formData.agentContact || "None",
+      size: formData.page === 'classifieds' 
+        ? `${formData.words} words` 
+        : `${formData.columns} columns × ${formData.centimeters} cm`,
+      publishDates: publishDates.map(date => date.toLocaleDateString()).join(", "),
+      content: formData.content || "Content to be provided",
+      timestamp: new Date().toLocaleString()
+    };
+
+    // Create downloadable content
+    const orderContent = `
+ADVERTISEMENT ORDER COPY
+
+Order Generated: ${orderData.timestamp}
+===========================================
+
+ADVERTISEMENT DETAILS:
+• Title: ${orderData.title}
+• Category: ${orderData.category}
+• Page: ${orderData.page}
+• Size: ${orderData.size}
+
+CLIENT INFORMATION:
+• Name: ${orderData.client}
+• Contact: ${orderData.clientContact}
+
+AGENT INFORMATION:
+• Agent: ${orderData.agent}
+• Contact: ${orderData.agentContact}
+
+PUBLICATION DETAILS:
+• Dates: ${orderData.publishDates}
+• Content: ${orderData.content}
+
+===========================================
+Client Signature: ___________________
+Date: ___________________
+
+Please sign and return this order copy.
+    `;
+
+    // Download as text file (can be converted to PDF by office software)
+    const blob = new Blob([orderContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ad-order-${formData.clientName.replace(/\s+/g, '-')}-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Order Copy Downloaded",
+      description: "The advertisement order copy has been downloaded for client signature.",
+    });
   };
 
   const confirmSubmission = () => {
@@ -725,9 +826,19 @@ const AdForm = () => {
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>Ads are typically approved within 24 hours</span>
+            <div className="flex items-center space-x-3">
+              <Button 
+                type="button"
+                variant="outline" 
+                onClick={downloadOrderCopy}
+                className="flex items-center space-x-2"
+              >
+                <FileText className="h-4 w-4" />
+                <span>Download Order Copy</span>
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Generate order copy for client signature
+              </p>
             </div>
             <div className="flex space-x-3">
               <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
