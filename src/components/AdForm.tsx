@@ -956,7 +956,7 @@ Please sign and return this order copy.
                       !isFormComplete() && "opacity-50 cursor-not-allowed"
                     )}
                   >
-                    Submit Advertisement
+                     Schedule Advertisement
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -970,7 +970,7 @@ Please sign and return this order copy.
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={confirmSubmission}>
-                      Yes, Submit Advertisement
+                      Yes, Schedule Advertisement
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
