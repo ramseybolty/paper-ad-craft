@@ -10,7 +10,9 @@ const AdDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pageFilter, setPageFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("");  // New date filter
+  const [categoryFilter, setCategoryFilter] = useState("all");  // New category filter
+  const [agentFilter, setAgentFilter] = useState("all");        // New agent filter
+  const [dateFilter, setDateFilter] = useState("");            // Date filter
 
   const mockAds = [
     {
@@ -69,7 +71,7 @@ const AdDashboard = () => {
       title: "Marketing Manager Position Available",
       category: "Jobs",
       page: "inner-bw",
-      status: "expired",
+      status: "cancelled",
       columns: "5",
       centimeters: "20",
       words: "",
@@ -117,6 +119,10 @@ const AdDashboard = () => {
     }
   ];
 
+  // Extract unique categories and agents for filters
+  const uniqueCategories = [...new Set(mockAds.map(ad => ad.category))];
+  const uniqueAgents = [...new Set(mockAds.map(ad => ad.agentName).filter(name => name))];
+
   // Filter logic
   const filteredAds = mockAds.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -124,12 +130,16 @@ const AdDashboard = () => {
                          ad.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || ad.status === statusFilter;
     const matchesPage = pageFilter === "all" || ad.page === pageFilter;
+    const matchesCategory = categoryFilter === "all" || ad.category === categoryFilter;
+    const matchesAgent = agentFilter === "all" || 
+                        (agentFilter === "no-agent" && !ad.agentName) ||
+                        ad.agentName === agentFilter;
     const matchesDate = !dateFilter || ad.publishDates.some(date => 
       new Date(date).toLocaleDateString().includes(dateFilter) ||
       date.includes(dateFilter)
     );
     
-    return matchesSearch && matchesStatus && matchesPage && matchesDate;
+    return matchesSearch && matchesStatus && matchesPage && matchesCategory && matchesAgent && matchesDate;
   });
 
   const getPageBadge = (page: string) => {
@@ -162,8 +172,8 @@ const AdDashboard = () => {
         return <Badge className="bg-success text-success-foreground"><CheckCircle className="h-3 w-3 mr-1" />Published</Badge>;
       case "pending":
         return <Badge className="bg-warning text-warning-foreground"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-      case "expired":
-        return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Expired</Badge>;
+      case "cancelled":
+        return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -173,7 +183,7 @@ const AdDashboard = () => {
     { label: "Total Ads", value: "12", icon: BarChart3, color: "text-primary" },
     { label: "Active", value: "8", icon: CheckCircle, color: "text-success" },
     { label: "Pending", value: "2", icon: Clock, color: "text-warning" },
-    { label: "Expired", value: "2", icon: AlertCircle, color: "text-destructive" }
+    { label: "Cancelled", value: "2", icon: AlertCircle, color: "text-destructive" }
   ];
 
   return (
@@ -224,7 +234,34 @@ const AdDashboard = () => {
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="expired">Expired</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {uniqueCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={agentFilter} onValueChange={setAgentFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="no-agent">No Agent</SelectItem>
+                  {uniqueAgents.map((agent) => (
+                    <SelectItem key={agent} value={agent}>
+                      {agent}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select value={pageFilter} onValueChange={setPageFilter}>
