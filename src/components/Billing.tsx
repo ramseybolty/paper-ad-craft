@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { 
   Receipt, 
   Download, 
@@ -35,6 +36,7 @@ const Billing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
   const [agentFilter, setAgentFilter] = useState("all");
+  const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -50,6 +52,9 @@ const Billing = () => {
   
   // Mock user role - in real implementation this would come from auth context
   const currentUserRole = "admin"; // admin, staff, accountant
+
+  // Available agents for search
+  const availableAgents = ["Raj Kumar", "Priya Sharma", "Amit Singh", "Suresh Patel"];
 
   // Mock ads with billing information and enhanced payment structure
   const adBillingData = [
@@ -459,18 +464,54 @@ const Billing = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={agentFilter} onValueChange={setAgentFilter}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Agents</SelectItem>
-                  <SelectItem value="Raj Kumar">Raj Kumar</SelectItem>
-                  <SelectItem value="Priya Sharma">Priya Sharma</SelectItem>
-                  <SelectItem value="Amit Singh">Amit Singh</SelectItem>
-                  <SelectItem value="Suresh Patel">Suresh Patel</SelectItem>
-                </SelectContent>
-              </Select>
+              <Popover open={agentSearchOpen} onOpenChange={setAgentSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={agentSearchOpen}
+                    className="w-36 justify-between bg-background"
+                  >
+                    {agentFilter === "all"
+                      ? "All Agents"
+                      : agentFilter}
+                    <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-36 p-0 bg-background border shadow-md z-50">
+                  <Command className="bg-background">
+                    <CommandInput placeholder="Search agents..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No agent found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="all"
+                          onSelect={() => {
+                            setAgentFilter("all");
+                            setAgentSearchOpen(false);
+                          }}
+                          className="cursor-pointer hover:bg-muted"
+                        >
+                          All Agents
+                        </CommandItem>
+                        {availableAgents.map((agent) => (
+                          <CommandItem
+                            key={agent}
+                            value={agent}
+                            onSelect={() => {
+                              setAgentFilter(agent);
+                              setAgentSearchOpen(false);
+                            }}
+                            className="cursor-pointer hover:bg-muted"
+                          >
+                            {agent}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-36">
