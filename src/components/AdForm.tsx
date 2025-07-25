@@ -31,8 +31,10 @@ const AdForm = () => {
     title: "",
     category: "",
     content: "",
+    page: "", // New page selection field
     columns: "",
     centimeters: "",
+    words: "", // For classified ads
     clientName: "",
     clientType: "individual",
     clientContact: "",
@@ -159,7 +161,7 @@ const AdForm = () => {
       </CardHeader>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="title">Advertisement Title</Label>
               <Input
@@ -183,6 +185,22 @@ const AdForm = () => {
                       {category}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="page">Page Selection *</Label>
+              <Select value={formData.page} onValueChange={(value) => setFormData({...formData, page: value, columns: "", centimeters: "", words: ""})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select page" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="front">Front</SelectItem>
+                  <SelectItem value="back">Back</SelectItem>
+                  <SelectItem value="inner-color">Inner Color</SelectItem>
+                  <SelectItem value="inner-bw">Inner B&W</SelectItem>
+                  <SelectItem value="classifieds">Classifieds</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -512,68 +530,131 @@ const AdForm = () => {
             </div>
           </div>
 
-          {/* Size Configuration - Now Mandatory */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Advertisement Size *</Label>
-            <p className="text-sm text-muted-foreground">Specify dimensions for your advertisement (required for pricing calculation)</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="columns">Columns *</Label>
-                <Input
-                  id="columns"
-                  type="number"
-                  min="1"
-                  max="6"
-                  placeholder="Number of columns (1-6)"
-                  value={formData.columns}
-                  onChange={(e) => setFormData({...formData, columns: e.target.value})}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                  required
-                />
-              </div>
+          {/* Size Configuration - Conditional based on page selection */}
+          {formData.page && (
+            <div className="space-y-4">
+              <Label className="text-base font-semibold">Advertisement Size *</Label>
+              <p className="text-sm text-muted-foreground">
+                {formData.page === 'classifieds' 
+                  ? 'Specify word count for classified advertisement pricing'
+                  : 'Specify dimensions for your advertisement (required for pricing calculation)'
+                }
+              </p>
               
-              <div className="space-y-2">
-                <Label htmlFor="centimeters">Height (cm) *</Label>
-                <Input
-                  id="centimeters"
-                  type="number"
-                  min="1"
-                  placeholder="Height in centimeters"
-                  value={formData.centimeters}
-                  onChange={(e) => setFormData({...formData, centimeters: e.target.value})}
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                  required
-                />
-              </div>
-            </div>
-            
-            {formData.columns && formData.centimeters && (
-              <div className="p-4 bg-success/10 rounded-lg border border-success/20">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Cost per date: ${(parseInt(formData.columns) * parseInt(formData.centimeters) * 0.8).toFixed(2)}
-                    </p>
+              {formData.page === 'classifieds' ? (
+                // Classified ads - Words field
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="words">Number of Words *</Label>
+                    <Input
+                      id="words"
+                      type="number"
+                      min="1"
+                      placeholder="Number of words in the classified ad"
+                      value={formData.words}
+                      onChange={(e) => setFormData({...formData, words: e.target.value})}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
                   </div>
-                  <Badge variant="default" className="bg-success text-success-foreground">
-                    Size Set
-                  </Badge>
-                </div>
-              </div>
-            )}
+                  
+                  {formData.words && (
+                    <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            Classified Ad: {formData.words} word{formData.words !== "1" ? "s" : ""}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Cost per date: ${(parseInt(formData.words) * 0.5).toFixed(2)} (${0.50}/word)
+                          </p>
+                        </div>
+                        <Badge variant="default" className="bg-success text-success-foreground">
+                          Words Set
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
 
-            {(!formData.columns || !formData.centimeters) && (
-              <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
-                <p className="text-sm text-warning-foreground">
-                  ⚠️ Both columns and height are required for advertisement pricing
-                </p>
-              </div>
-            )}
-          </div>
+                  {!formData.words && (
+                    <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+                      <p className="text-sm text-warning-foreground">
+                        ⚠️ Number of words is required for classified ad pricing
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Other pages - Columns and Height fields
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="columns">Columns *</Label>
+                      <Input
+                        id="columns"
+                        type="number"
+                        min="1"
+                        max="6"
+                        placeholder="Number of columns (1-6)"
+                        value={formData.columns}
+                        onChange={(e) => setFormData({...formData, columns: e.target.value})}
+                        className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="centimeters">Height (cm) *</Label>
+                      <Input
+                        id="centimeters"
+                        type="number"
+                        min="1"
+                        placeholder="Height in centimeters"
+                        value={formData.centimeters}
+                        onChange={(e) => setFormData({...formData, centimeters: e.target.value})}
+                        className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  {formData.columns && formData.centimeters && (
+                    <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Cost per date: ${(parseInt(formData.columns) * parseInt(formData.centimeters) * 0.8).toFixed(2)}
+                          </p>
+                        </div>
+                        <Badge variant="default" className="bg-success text-success-foreground">
+                          Size Set
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {(!formData.columns || !formData.centimeters) && (
+                    <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+                      <p className="text-sm text-warning-foreground">
+                        ⚠️ Both columns and height are required for advertisement pricing
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!formData.page && (
+            <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+              <p className="text-sm text-warning-foreground">
+                ⚠️ Please select a page first to configure advertisement size
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center space-x-4 p-4 bg-accent/10 rounded-lg border border-accent/20">
             <ImageIcon className="h-5 w-5 text-accent" />
