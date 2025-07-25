@@ -62,6 +62,39 @@ const Analytics = () => {
     { name: "Personal", ads: 234, revenue: 8900, growth: 5.4 }
   ];
 
+  // Client analysis data
+  const clientTypeData = [
+    { name: "Individual", value: 65, color: "#3b82f6", clients: 234, revenue: 45600, avgRevenue: 195 },
+    { name: "Agency", value: 35, color: "#10b981", clients: 87, revenue: 78980, avgRevenue: 908 }
+  ];
+
+  const topClientsData = [
+    { name: "ABC Digital Agency", type: "Agency", ads: 24, revenue: 12400, lastAd: "2024-01-20" },
+    { name: "Prime Motors Ltd", type: "Agency", ads: 18, revenue: 9800, lastAd: "2024-01-18" },
+    { name: "Real Estate Pro", type: "Agency", ads: 15, revenue: 8900, lastAd: "2024-01-15" },
+    { name: "John Smith", type: "Individual", ads: 12, revenue: 2400, lastAd: "2024-01-22" },
+    { name: "Sarah Johnson", type: "Individual", ads: 8, revenue: 1600, lastAd: "2024-01-19" },
+    { name: "Maria Garcia", type: "Individual", ads: 6, revenue: 900, lastAd: "2024-01-21" }
+  ];
+
+  // Agent analysis data
+  const agentPerformanceData = [
+    { name: "Mike Wilson", ads: 45, revenue: 23400, clients: 12, avgDeal: 520, commission: 2340 },
+    { name: "Lisa Chen", ads: 38, revenue: 19800, clients: 9, avgDeal: 521, commission: 1980 },
+    { name: "David Brown", ads: 32, revenue: 16200, clients: 8, avgDeal: 506, commission: 1620 },
+    { name: "Emma Davis", ads: 28, revenue: 14600, clients: 7, avgDeal: 521, commission: 1460 },
+    { name: "No Agent", ads: 89, revenue: 18900, clients: 45, avgDeal: 212, commission: 0 }
+  ];
+
+  const agentTrendsData = [
+    { month: "Jan", mike: 3800, lisa: 3200, david: 2900, emma: 2400 },
+    { month: "Feb", mike: 4200, lisa: 3600, david: 3100, emma: 2800 },
+    { month: "Mar", mike: 3900, lisa: 3400, david: 2800, emma: 2600 },
+    { month: "Apr", mike: 4500, lisa: 3800, david: 3300, emma: 3000 },
+    { month: "May", mike: 4800, lisa: 4100, david: 3600, emma: 3200 },
+    { month: "Jun", mike: 4300, lisa: 3700, david: 3200, emma: 2900 }
+  ];
+
   const weeklyTrends = [
     { day: "Mon", ads: 12, revenue: 2400 },
     { day: "Tue", ads: 19, revenue: 3100 },
@@ -145,7 +178,9 @@ const Analytics = () => {
               <SelectItem value="7days">Last 7 days</SelectItem>
               <SelectItem value="30days">Last 30 days</SelectItem>
               <SelectItem value="90days">Last 90 days</SelectItem>
+              <SelectItem value="6months">Last 6 months</SelectItem>
               <SelectItem value="1year">Last year</SelectItem>
+              <SelectItem value="yearly">Yearly Analysis</SelectItem>
             </SelectContent>
           </Select>
           <Select value={pageFilter} onValueChange={setPageFilter}>
@@ -402,6 +437,271 @@ const Analytics = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Client Analysis Section */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Users className="h-5 w-5 text-primary" />
+          Client Analysis
+        </h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Client Type Distribution */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Client Type Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={clientTypeData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}%`}
+                      labelLine={false}
+                    >
+                      {clientTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {clientTypeData.map((type, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: type.color }}
+                        />
+                        <div>
+                          <span className="font-medium text-foreground">{type.name}</span>
+                          <p className="text-sm text-muted-foreground">{type.clients} clients</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold text-foreground">${type.revenue.toLocaleString()}</span>
+                        <p className="text-sm text-muted-foreground">Avg: ${type.avgRevenue}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Clients */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Top Performing Clients
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium text-sm text-foreground">Client</th>
+                      <th className="text-right p-3 font-medium text-sm text-foreground">Ads</th>
+                      <th className="text-right p-3 font-medium text-sm text-foreground">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topClientsData.map((client, index) => (
+                      <tr key={index} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{client.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  client.type === "Agency" 
+                                    ? "bg-green-100 text-green-800" 
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {client.type}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                Last: {new Date(client.lastAd).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right text-sm text-foreground">{client.ads}</td>
+                        <td className="p-3 text-right text-sm font-medium text-foreground">
+                          ${client.revenue.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Agent Analysis Section */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary" />
+          Agent Performance Analysis
+        </h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Agent Revenue Trends */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Agent Revenue Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={agentTrendsData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="month" 
+                    className="text-xs fill-muted-foreground"
+                  />
+                  <YAxis className="text-xs fill-muted-foreground" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="mike" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Mike Wilson"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="lisa" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    name="Lisa Chen"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="david" 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    name="David Brown"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="emma" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Emma Davis"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Agent Performance Table */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Agent Performance Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium text-sm text-foreground">Agent</th>
+                      <th className="text-right p-3 font-medium text-sm text-foreground">Ads</th>
+                      <th className="text-right p-3 font-medium text-sm text-foreground">Revenue</th>
+                      <th className="text-right p-3 font-medium text-sm text-foreground">Avg Deal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agentPerformanceData.map((agent, index) => (
+                      <tr key={index} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div>
+                            <p className="font-medium text-foreground text-sm">{agent.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {agent.name === "No Agent" ? "Direct clients" : `${agent.clients} clients`}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right text-sm text-foreground">{agent.ads}</td>
+                        <td className="p-3 text-right text-sm font-medium text-foreground">
+                          ${agent.revenue.toLocaleString()}
+                        </td>
+                        <td className="p-3 text-right text-sm text-foreground">
+                          ${agent.avgDeal}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Agent Commission Summary */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Commission Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={agentPerformanceData.filter(agent => agent.name !== "No Agent")}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="name" 
+                  className="text-xs fill-muted-foreground"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis className="text-xs fill-muted-foreground" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar 
+                  dataKey="commission" 
+                  fill="hsl(var(--primary))" 
+                  radius={[4, 4, 0, 0]}
+                  name="Commission ($)"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
