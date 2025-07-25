@@ -23,13 +23,16 @@ import {
   User,
   FileText
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
+import { Advertisement } from "@/types/ad";
+import { migrateAllAdsInStorage } from "@/utils/adDataMigration";
 
 const Schedule = () => {
   const { toast } = useToast();
+  const [ads, setAds] = useState<Advertisement[]>([]);
   
   // Set default date to tomorrow
   const tomorrow = new Date();
@@ -39,13 +42,18 @@ const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pageFilter, setPageFilter] = useState("all");
-  const [selectedAds, setSelectedAds] = useState<number[]>([]);
+  const [selectedAds, setSelectedAds] = useState<(string | number)[]>([]);
 
   // Check if selected date is past
   const isPastDate = selectedDate ? selectedDate.getTime() < new Date().setHours(0, 0, 0, 0) : false;
 
+  // Load ads from localStorage on component mount
+  useEffect(() => {
+    const migratedAds = migrateAllAdsInStorage();
+    setAds(migratedAds);
+  }, []);
 
-  // Mock scheduled ads data with special instructions
+  // Convert Advertisement data to schedule format and merge with mock data
   const scheduledAds = [
     {
       id: 1,
@@ -241,6 +249,29 @@ const Schedule = () => {
     }
   ];
 
+  // Add real ads from database
+  const realAds = ads.flatMap(ad => 
+    ad.publications.map(pub => ({
+      id: `${ad.id}-${pub.date}`,
+      title: ad.title,
+      clientName: ad.clientName,
+      agentName: ad.agentName || "No Agent",
+      page: ad.page,
+      size: ad.page === "classifieds" ? `${ad.words} words` : `${ad.columns}x${ad.centimeters}`,
+      publishDate: pub.date,
+      publishTime: "08:00",
+      status: pub.status,
+      category: ad.category.toLowerCase().replace(/\s+/g, "-"),
+      priority: "medium",
+      notes: ad.instructions || "",
+      specialInstructions: ad.instructions || "",
+      adContent: `${ad.title} - ${ad.clientName}`
+    }))
+  );
+
+  // Combine mock and real ads
+  const allScheduledAds = [...scheduledAds, ...realAds];
+
   // Multi-select and bulk action functions
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -250,7 +281,7 @@ const Schedule = () => {
     }
   };
 
-  const handleSelectAd = (adId: number, checked: boolean) => {
+  const handleSelectAd = (adId: string | number, checked: boolean) => {
     if (checked) {
       setSelectedAds([...selectedAds, adId]);
     } else {
@@ -287,7 +318,7 @@ const Schedule = () => {
   };
 
   // Filter logic
-  const filteredAds = scheduledAds.filter((ad) => {
+  const filteredAds = allScheduledAds.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.agentName.toLowerCase().includes(searchTerm.toLowerCase());
