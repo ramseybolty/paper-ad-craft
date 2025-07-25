@@ -304,10 +304,9 @@ Please sign and return this order copy.
   };
 
   const saveNewClientToDatabase = () => {
-    // Check if client already exists
+    // Check if contact info already exists (names can be duplicate, but contact must be unique)
     const existingClient = savedClients.find(
-      client => client.name.toLowerCase() === formData.clientName.toLowerCase() &&
-                client.contact === formData.clientContact
+      client => client.contact === formData.clientContact.trim()
     );
     
     if (!existingClient && formData.clientName.trim() && formData.clientContact.trim()) {
@@ -329,12 +328,11 @@ Please sign and return this order copy.
   };
 
   const saveNewAgentToDatabase = () => {
-    // Check if agent already exists and if agent data is provided
+    // Check if agent contact already exists (names can be duplicate, but contact must be unique)
     if (!formData.agentName.trim() || !formData.agentContact.trim()) return;
     
     const existingAgent = savedAgents.find(
-      agent => agent.name.toLowerCase() === formData.agentName.toLowerCase() &&
-               agent.contact === formData.agentContact
+      agent => agent.contact === formData.agentContact.trim()
     );
     
     if (!existingAgent) {
