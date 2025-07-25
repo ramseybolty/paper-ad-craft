@@ -26,7 +26,7 @@ const AdForm = () => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0); // Reset time to start of day
   
-  const [publishDates, setPublishDates] = useState<Date[]>([tomorrow]); // Default to tomorrow
+  const [publishDates, setPublishDates] = useState<Date[]>([]); // No default selection
   const [tempDate, setTempDate] = useState<Date>();
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
@@ -167,11 +167,8 @@ const AdForm = () => {
       agentContact: ""
     });
     
-    // Reset dates to tomorrow only
-    const newTomorrow = new Date();
-    newTomorrow.setDate(newTomorrow.getDate() + 1);
-    newTomorrow.setHours(0, 0, 0, 0);
-    setPublishDates([newTomorrow]);
+    // Reset dates to empty (no default selection)
+    setPublishDates([]);
     setTempDate(undefined);
     
     // Reset dropdown states
@@ -209,19 +206,20 @@ const AdForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Advertisement Title</Label>
+              <Label htmlFor="title">Advertisement Title *</Label>
               <Input
                 id="title"
                 placeholder="Enter a compelling title for your ad"
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+              <Label htmlFor="category">Category *</Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select advertisement category" />
                 </SelectTrigger>
@@ -334,8 +332,8 @@ const AdForm = () => {
                   </Popover>
 
                 <div className="space-y-2">
-                  <Label>Client Type</Label>
-                  <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})}>
+                  <Label>Client Type *</Label>
+                  <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select client type" />
                     </SelectTrigger>
@@ -526,6 +524,16 @@ const AdForm = () => {
                         defaultMonth={tomorrow}
                         initialFocus
                         className={cn("p-3 pointer-events-auto")}
+                        modifiers={{
+                          tomorrow: tomorrow
+                        }}
+                        modifiersStyles={{
+                          tomorrow: {
+                            backgroundColor: '#fef3c7',
+                            color: '#92400e',
+                            fontWeight: 600
+                          }
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
