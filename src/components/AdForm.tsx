@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn, formatDate } from "@/lib/utils";
+import { Advertisement, AdPublication } from "@/types/ad";
 
 const AdForm = () => {
   const { toast } = useToast();
@@ -374,8 +375,14 @@ Please sign and return this order copy.
   };
 
   const confirmSubmission = () => {
-    // Create new ad object
-    const newAd = {
+    // Create publications array from selected dates
+    const publications: AdPublication[] = publishDates.map(date => ({
+      date: date.toISOString().split('T')[0],
+      status: 'scheduled' as const
+    }));
+
+    // Create new ad object with new data structure
+    const newAd: Advertisement = {
       id: Date.now(), // Simple ID generation
       title: formData.title,
       category: formData.category,
@@ -385,13 +392,15 @@ Please sign and return this order copy.
       size: formData.page === 'classifieds' 
         ? `${formData.words} words` 
         : `${formData.columns}x${formData.centimeters}`,
+      columns: formData.columns,
+      centimeters: formData.centimeters,
+      words: formData.words,
       clientName: formData.clientName,
-      clientType: formData.clientType,
+      clientType: formData.clientType as 'individual' | 'agency',
       clientContact: formData.clientContact,
       agentName: formData.agentName || "",
       agentContact: formData.agentContact || "",
-      publishDates: publishDates.map(date => date.toISOString().split('T')[0]),
-      status: "scheduled",
+      publications, // Use new publications structure
       priority: "medium",
       createdAt: new Date().toISOString(),
       baseAmount: formData.page === 'classifieds' 

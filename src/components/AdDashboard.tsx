@@ -9,7 +9,9 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
 import EditAdModal from "./EditAdModal";
-import StatusEditModal from "./StatusEditModal";
+import DateSpecificStatusModal from "./DateSpecificStatusModal";
+import { Advertisement } from "@/types/ad";
+import { migrateAllAdsInStorage, getAdOverallStatus, getAdPublishDates, hasEditablePublications } from "@/utils/adDataMigration";
 
 interface AdDashboardProps {
   showAllAds?: boolean;
@@ -24,121 +26,141 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   const [agentFilter, setAgentFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [ads, setAds] = useState<any[]>([]);
-  const [editingAd, setEditingAd] = useState<any>(null);
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isStatusEditModalOpen, setIsStatusEditModalOpen] = useState(false);
+  const [isDateSpecificStatusModalOpen, setIsDateSpecificStatusModalOpen] = useState(false);
 
   // Load ads from localStorage on component mount
   useEffect(() => {
-    const savedAds = JSON.parse(localStorage.getItem('newsprint-ads') || '[]');
-    const defaultAds = [
+    const migratedAds = migrateAllAdsInStorage();
+    const defaultAds: Advertisement[] = [
       {
         id: 1,
         title: "Beautiful Downtown Apartment for Rent",
         category: "Real Estate",
         page: "front",
-        status: "published",
         columns: "3",
         centimeters: "12",
         words: "",
         instructions: "Include property photos in layout",
         clientName: "John Smith",
-        clientType: "individual",
+        clientType: "individual" as const,
         clientContact: "+1-555-0101",
         agentName: "Mike Wilson",
         agentContact: "mike@newsagency.com",
-        publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"]
+        createdAt: "2024-01-01T00:00:00Z",
+        publications: [
+          { date: "2024-01-15", status: "published" as const, publishedAt: "2024-01-15T10:00:00Z" },
+          { date: "2024-01-22", status: "published" as const, publishedAt: "2024-01-22T10:00:00Z" },
+          { date: "2024-01-29", status: "scheduled" as const }
+        ]
       },
       {
         id: 2,
         title: "Professional Web Design Services", 
         category: "Services",
         page: "inner-color",
-        status: "scheduled",
         columns: "2",
         centimeters: "8",
         words: "",
         instructions: "",
         clientName: "ABC Digital Agency",
-        clientType: "agency",
+        clientType: "agency" as const,
         clientContact: "+1-555-0102",
         agentName: "",
         agentContact: "",
-        publishDates: ["2024-02-01", "2024-02-08"]
+        createdAt: "2024-01-02T00:00:00Z",
+        publications: [
+          { date: "2024-02-01", status: "scheduled" as const },
+          { date: "2024-02-08", status: "scheduled" as const }
+        ]
       },
       {
         id: 3,
         title: "2019 Honda Civic - Excellent Condition",
         category: "Automotive", 
         page: "back",
-        status: "published",
         columns: "4",
         centimeters: "15",
         words: "",
         instructions: "Use bold headers for price",
         clientName: "Sarah Johnson",
-        clientType: "individual",
+        clientType: "individual" as const,
         clientContact: "+1-555-0103",
         agentName: "Lisa Chen",
         agentContact: "lisa@adpartners.com",
-        publishDates: ["2024-01-12", "2024-01-19"]
+        createdAt: "2024-01-03T00:00:00Z",
+        publications: [
+          { date: "2024-01-12", status: "published" as const, publishedAt: "2024-01-12T10:00:00Z" },
+          { date: "2024-01-19", status: "published" as const, publishedAt: "2024-01-19T10:00:00Z" }
+        ]
       },
       {
         id: 4,
         title: "Marketing Manager Position Available",
         category: "Jobs",
         page: "inner-bw",
-        status: "cancelled",
         columns: "5",
         centimeters: "20",
         words: "",
         instructions: "Rush placement needed",
         clientName: "Prime Motors Ltd",
-        clientType: "agency",
+        clientType: "agency" as const,
         clientContact: "+1-555-0104",
         agentName: "David Brown",
         agentContact: "david@mediagroup.com",
-        publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"]
+        createdAt: "2024-01-04T00:00:00Z",
+        publications: [
+          { date: "2024-01-01", status: "cancelled" as const, cancelledAt: "2024-01-01T09:00:00Z", reason: "Client requested cancellation" },
+          { date: "2024-01-08", status: "cancelled" as const, cancelledAt: "2024-01-08T09:00:00Z", reason: "Client requested cancellation" },
+          { date: "2024-01-15", status: "cancelled" as const, cancelledAt: "2024-01-15T09:00:00Z", reason: "Client requested cancellation" }
+        ]
       },
       {
         id: 5,
         title: "Lost Cat - Reward Offered",
         category: "Personal",
         page: "classifieds",
-        status: "published",
         columns: "",
         centimeters: "",
         words: "25",
         instructions: "",
         clientName: "Maria Garcia",
-        clientType: "individual",
+        clientType: "individual" as const,
         clientContact: "+1-555-0105",
         agentName: "",
         agentContact: "",
-        publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"]
+        createdAt: "2024-01-05T00:00:00Z",
+        publications: [
+          { date: "2024-01-20", status: "published" as const, publishedAt: "2024-01-20T10:00:00Z" },
+          { date: "2024-01-21", status: "published" as const, publishedAt: "2024-01-21T10:00:00Z" },
+          { date: "2024-01-22", status: "published" as const, publishedAt: "2024-01-22T10:00:00Z" }
+        ]
       },
       {
         id: 6,
         title: "Garage Sale - Everything Must Go",
         category: "Personal",
         page: "classifieds",
-        status: "published",
         columns: "",
         centimeters: "",
         words: "15",
         instructions: "Bold the date and address",
         clientName: "Robert Wilson",
-        clientType: "individual",
+        clientType: "individual" as const,
         clientContact: "+1-555-0106",
         agentName: "",
         agentContact: "",
-        publishDates: ["2024-01-25"]
+        createdAt: "2024-01-06T00:00:00Z",
+        publications: [
+          { date: "2024-01-25", status: "published" as const, publishedAt: "2024-01-25T10:00:00Z" }
+        ]
       }
     ];
     
-    // Merge saved ads with default ads (prioritize saved ads)
-    const allAds = [...defaultAds, ...savedAds];
+    // Merge migrated ads with default ads (prioritize saved ads)
+    const allAds = [...defaultAds, ...migratedAds];
     setAds(allAds);
   }, []);
 
@@ -151,13 +173,15 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || ad.status === statusFilter;
+    const adOverallStatus = getAdOverallStatus(ad);
+    const adPublishDates = getAdPublishDates(ad);
+    const matchesStatus = statusFilter === "all" || adOverallStatus === statusFilter;
     const matchesPage = pageFilter === "all" || ad.page === pageFilter;
     const matchesCategory = categoryFilter === "all" || ad.category === categoryFilter;
     const matchesAgent = agentFilter === "all" || 
                         (agentFilter === "no-agent" && !ad.agentName) ||
                         ad.agentName === agentFilter;
-    const matchesDate = (!fromDate && !toDate) || ad.publishDates.some(date => {
+    const matchesDate = (!fromDate && !toDate) || adPublishDates.some(date => {
       const adDate = new Date(date);
       const from = fromDate ? new Date(fromDate) : null;
       const to = toDate ? new Date(toDate) : null;
@@ -210,6 +234,8 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Scheduled</Badge>;
       case "cancelled":
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
+      case "mixed":
+        return <Badge variant="outline" className="border-orange-300 text-orange-700"><AlertCircle className="h-3 w-3 mr-1" />Mixed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -235,8 +261,8 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
         // Full edit modal for All Ads page
         setIsEditModalOpen(true);
       } else {
-        // Status-only edit modal for My Ads page
-        setIsStatusEditModalOpen(true);
+        // Date-specific status modal for My Ads page
+        setIsDateSpecificStatusModalOpen(true);
       }
     }
   };
@@ -281,9 +307,9 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
     setIsEditModalOpen(false);
   };
 
-  const handleCloseStatusEditModal = () => {
+  const handleCloseDateSpecificStatusModal = () => {
     setEditingAd(null);
-    setIsStatusEditModalOpen(false);
+    setIsDateSpecificStatusModalOpen(false);
   };
 
   // Check if current user is admin (for demo purposes, this could come from auth context)
@@ -372,10 +398,11 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                   <SelectItem value="all">All Status</SelectItem>
+                   <SelectItem value="scheduled">Scheduled</SelectItem>
+                   <SelectItem value="published">Published</SelectItem>
+                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                   <SelectItem value="mixed">Mixed</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -482,7 +509,7 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                       <Badge variant="outline">{ad.category}</Badge>
                     </td>
                     <td className="p-4">
-                      {getStatusBadge(ad.status)}
+                      {getStatusBadge(getAdOverallStatus(ad))}
                     </td>
                     <td className="p-4">
                       <div className="text-muted-foreground">
@@ -509,14 +536,14 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                     </td>
                     <td className="p-4">
                       <div className="space-y-1">
-                        {ad.publishDates.slice(0, 2).map((date, index) => (
-                          <div key={index} className="text-xs text-muted-foreground">
+                        {getAdPublishDates(ad).slice(0, 2).map((date, index) => (
+                          <div key={`${ad.id}-date-${index}`} className="text-xs text-muted-foreground">
                             {formatDate(date)}
                           </div>
                         ))}
-                        {ad.publishDates.length > 2 && (
+                        {getAdPublishDates(ad).length > 2 && (
                           <div className="text-xs text-primary">
-                            +{ad.publishDates.length - 2} more
+                            +{getAdPublishDates(ad).length - 2} more
                           </div>
                         )}
                       </div>
@@ -588,14 +615,16 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
         onSave={handleSaveEditedAd}
       />
 
-      {/* Status Edit Modal - Status only for My Ads page */}
-      <StatusEditModal
-        ad={editingAd}
-        isOpen={isStatusEditModalOpen}
-        onClose={handleCloseStatusEditModal}
-        onSave={handleSaveEditedAd}
-        isAdmin={isAdmin}
-      />
+      {/* Date-Specific Status Modal - For My Ads page */}
+      {editingAd && (
+        <DateSpecificStatusModal
+          ad={editingAd}
+          isOpen={isDateSpecificStatusModalOpen}
+          onClose={handleCloseDateSpecificStatusModal}
+          onSave={handleSaveEditedAd}
+          isAdmin={isAdmin}
+        />
+      )}
     </div>
   );
 };
