@@ -58,8 +58,16 @@ const Billing = () => {
   const formatDate = (date: string | Date) => {
     return format(new Date(date), "dd/MM/yyyy");
   };
-  const availableAgents = ["Raj Kumar", "Priya Sharma", "Amit Singh", "Suresh Patel"];
-  const availableClientTypes = ["individual", "agency"];
+  const availableAgents = [
+    { name: "Raj Kumar", contact: "+91 98765 43210" },
+    { name: "Priya Sharma", contact: "+91 87654 32109" },
+    { name: "Amit Singh", contact: "+91 76543 21098" },
+    { name: "Suresh Patel", contact: "+91 65432 10987" }
+  ];
+  const availableClientTypes = [
+    { type: "individual", label: "Individual", contact: "Personal Clients" },
+    { type: "agency", label: "Agency", contact: "Business Clients" }
+  ];
 
   // Mock ads with billing information and enhanced payment structure
   const adBillingData = [
@@ -490,15 +498,18 @@ const Billing = () => {
                         </CommandItem>
                         {availableClientTypes.map((type) => (
                           <CommandItem
-                            key={type}
-                            value={type}
+                            key={type.type}
+                            value={type.type}
                             onSelect={() => {
-                              setClientFilter(type);
+                              setClientFilter(type.type);
                               setClientSearchOpen(false);
                             }}
                             className="cursor-pointer hover:bg-muted"
                           >
-                            {type === "individual" ? "Individual" : "Agency"}
+                            <div className="flex flex-col">
+                              <span>{type.label}</span>
+                              <span className="text-xs text-muted-foreground">{type.contact}</span>
+                            </div>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -539,15 +550,18 @@ const Billing = () => {
                         </CommandItem>
                         {availableAgents.map((agent) => (
                           <CommandItem
-                            key={agent}
-                            value={agent}
+                            key={agent.name}
+                            value={`${agent.name} ${agent.contact}`}
                             onSelect={() => {
-                              setAgentFilter(agent);
+                              setAgentFilter(agent.name);
                               setAgentSearchOpen(false);
                             }}
                             className="cursor-pointer hover:bg-muted"
                           >
-                            {agent}
+                            <div className="flex flex-col">
+                              <span>{agent.name}</span>
+                              <span className="text-xs text-muted-foreground">{agent.contact}</span>
+                            </div>
                           </CommandItem>
                         ))}
                       </CommandGroup>
