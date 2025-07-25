@@ -5,6 +5,7 @@ import AdForm from "@/components/AdForm";
 import AdDashboard from "@/components/AdDashboard";
 import Analytics from "@/components/Analytics";
 import Billing from "@/components/Billing";
+import Schedule from "@/components/Schedule";
 
 const Index = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -17,6 +18,8 @@ const Index = () => {
         return <Analytics />;
       case "billing":
         return <Billing />;
+      case "schedule":
+        return <Schedule />;
       case "my-ads":
       case "dashboard":
       default:
