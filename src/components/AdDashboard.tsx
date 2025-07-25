@@ -211,6 +211,39 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
 
   const pageTitle = showAllAds ? "All Advertisements" : "My Advertisements";
 
+  // Action handlers
+  const handleViewAd = (adId: number) => {
+    console.log('Viewing ad:', adId);
+    toast({
+      title: "View Advertisement",
+      description: `Opening details for advertisement ID: ${adId}`,
+    });
+  };
+
+  const handleEditAd = (adId: number) => {
+    console.log('Editing ad:', adId);
+    toast({
+      title: "Edit Advertisement", 
+      description: `Opening edit form for advertisement ID: ${adId}`,
+    });
+  };
+
+  const handleDeleteAd = (adId: number) => {
+    console.log('Deleting ad:', adId);
+    const updatedAds = ads.filter(ad => ad.id !== adId);
+    setAds(updatedAds);
+    
+    // Update localStorage
+    const savedAds = updatedAds.filter(ad => !ad.id || ad.id > 1000); // Only save user-created ads
+    localStorage.setItem('userAds', JSON.stringify(savedAds));
+    
+    toast({
+      title: "Advertisement Deleted",
+      description: `Advertisement ID: ${adId} has been deleted successfully.`,
+      variant: "destructive"
+    });
+  };
+
   const stats = [
     { label: "Total Ads", value: "12", icon: BarChart3, color: "text-primary" },
     { label: "Active", value: "8", icon: CheckCircle, color: "text-success" },
@@ -444,17 +477,33 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button variant="ghost" size="sm" title="View Details">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" title="Edit Advertisement">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" title="Delete Advertisement">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                       <div className="flex items-center justify-end space-x-2">
+                         <Button 
+                           variant="ghost" 
+                           size="sm" 
+                           title="View Details"
+                           onClick={() => handleViewAd(ad.id)}
+                         >
+                           <Eye className="h-4 w-4" />
+                         </Button>
+                         <Button 
+                           variant="ghost" 
+                           size="sm" 
+                           title="Edit Advertisement"
+                           onClick={() => handleEditAd(ad.id)}
+                         >
+                           <Edit className="h-4 w-4" />
+                         </Button>
+                         <Button 
+                           variant="ghost" 
+                           size="sm" 
+                           className="text-destructive hover:text-destructive" 
+                           title="Delete Advertisement"
+                           onClick={() => handleDeleteAd(ad.id)}
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
                     </td>
                   </tr>
                 ))}
