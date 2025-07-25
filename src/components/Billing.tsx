@@ -35,6 +35,7 @@ const Billing = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [agentFilter, setAgentFilter] = useState("all");
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -58,6 +59,7 @@ const Billing = () => {
     return format(new Date(date), "dd/MM/yyyy");
   };
   const availableAgents = ["Raj Kumar", "Priya Sharma", "Amit Singh", "Suresh Patel"];
+  const availableClientTypes = ["individual", "agency"];
 
   // Mock ads with billing information and enhanced payment structure
   const adBillingData = [
@@ -456,16 +458,54 @@ const Billing = () => {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Select value={clientFilter} onValueChange={setClientFilter}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Client Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Clients</SelectItem>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="agency">Agency</SelectItem>
-                </SelectContent>
-              </Select>
+              <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={clientSearchOpen}
+                    className="w-36 justify-between bg-background"
+                  >
+                    {clientFilter === "all"
+                      ? "All Clients"
+                      : clientFilter === "individual" ? "Individual" : "Agency"}
+                    <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-36 p-0 bg-background border shadow-md z-50">
+                  <Command className="bg-background">
+                    <CommandInput placeholder="Search client type..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No client type found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="all"
+                          onSelect={() => {
+                            setClientFilter("all");
+                            setClientSearchOpen(false);
+                          }}
+                          className="cursor-pointer hover:bg-muted"
+                        >
+                          All Clients
+                        </CommandItem>
+                        {availableClientTypes.map((type) => (
+                          <CommandItem
+                            key={type}
+                            value={type}
+                            onSelect={() => {
+                              setClientFilter(type);
+                              setClientSearchOpen(false);
+                            }}
+                            className="cursor-pointer hover:bg-muted"
+                          >
+                            {type === "individual" ? "Individual" : "Agency"}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
               <Popover open={agentSearchOpen} onOpenChange={setAgentSearchOpen}>
                 <PopoverTrigger asChild>
