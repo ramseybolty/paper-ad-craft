@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,8 @@ const AdForm = () => {
   const { toast } = useToast();
   const [publishDates, setPublishDates] = useState<Date[]>([]);
   const [tempDate, setTempDate] = useState<Date>();
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -25,23 +28,35 @@ const AdForm = () => {
     columns: "",
     centimeters: "",
     clientName: "",
-    clientType: "individual", // individual or agency
+    clientType: "individual",
+    clientContact: "", // Separate client contact
     agentName: "",
-    agentContact: ""
+    agentContact: "" // Separate agent contact
   });
 
-  // Mock saved clients and agents for dropdown selection
+  // Expanded mock data for better testing
   const [savedClients] = useState([
-    { id: 1, name: "John Smith", type: "individual", contact: "john@email.com" },
-    { id: 2, name: "ABC Real Estate", type: "agency", contact: "info@abcrealty.com" },
-    { id: 3, name: "Sarah Johnson", type: "individual", contact: "sarah@email.com" },
-    { id: 4, name: "Prime Motors Ltd", type: "agency", contact: "sales@primemotors.com" }
+    { id: 1, name: "John Smith", type: "individual", contact: "+1-555-0101", email: "john@email.com" },
+    { id: 2, name: "ABC Real Estate", type: "agency", contact: "+1-555-0102", email: "info@abcrealty.com" },
+    { id: 3, name: "Sarah Johnson", type: "individual", contact: "+1-555-0103", email: "sarah@email.com" },
+    { id: 4, name: "Prime Motors Ltd", type: "agency", contact: "+1-555-0104", email: "sales@primemotors.com" },
+    { id: 5, name: "John Miller", type: "individual", contact: "+1-555-0105", email: "jmiller@email.com" },
+    { id: 6, name: "Tech Solutions Inc", type: "agency", contact: "+1-555-0106", email: "contact@techsolutions.com" },
+    { id: 7, name: "Sarah Williams", type: "individual", contact: "+1-555-0107", email: "swilliams@email.com" },
+    { id: 8, name: "Global Marketing Agency", type: "agency", contact: "+1-555-0108", email: "hello@globalmarketing.com" },
+    { id: 9, name: "John Davis", type: "individual", contact: "+1-555-0109", email: "jdavis@email.com" },
+    { id: 10, name: "Metro Properties", type: "agency", contact: "+1-555-0110", email: "info@metroproperties.com" }
   ]);
 
   const [savedAgents] = useState([
-    { id: 1, name: "Mike Wilson", contact: "mike@newsagency.com", agency: "News Agency Pro" },
-    { id: 2, name: "Lisa Chen", contact: "lisa@adpartners.com", agency: "Ad Partners" },
-    { id: 3, name: "David Brown", contact: "david@mediagroup.com", agency: "Media Group" }
+    { id: 1, name: "Mike Wilson", contact: "+1-555-0201", email: "mike@newsagency.com", agency: "News Agency Pro" },
+    { id: 2, name: "Lisa Chen", contact: "+1-555-0202", email: "lisa@adpartners.com", agency: "Ad Partners" },
+    { id: 3, name: "David Brown", contact: "+1-555-0203", email: "david@mediagroup.com", agency: "Media Group" },
+    { id: 4, name: "Emily Wilson", contact: "+1-555-0204", email: "emily@newsagency.com", agency: "News Agency Pro" },
+    { id: 5, name: "Michael Torres", contact: "+1-555-0205", email: "mtorres@adpartners.com", agency: "Ad Partners" },
+    { id: 6, name: "Jennifer Lee", contact: "+1-555-0206", email: "jlee@creativemedia.com", agency: "Creative Media" },
+    { id: 7, name: "Robert Smith", contact: "+1-555-0207", email: "rsmith@newscentral.com", agency: "News Central" },
+    { id: 8, name: "Amanda Johnson", contact: "+1-555-0208", email: "ajohnson@mediaplus.com", agency: "Media Plus" }
   ]);
 
   const addPublishDate = () => {
@@ -62,8 +77,9 @@ const AdForm = () => {
         ...formData,
         clientName: client.name,
         clientType: client.type,
-        contactInfo: client.contact
+        clientContact: client.contact
       });
+      setClientSearchOpen(false);
     }
   };
 
@@ -75,6 +91,7 @@ const AdForm = () => {
         agentName: agent.name,
         agentContact: agent.contact
       });
+      setAgentSearchOpen(false);
     }
   };
 
@@ -166,19 +183,52 @@ const AdForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Select Saved Client (Optional)</Label>
-                  <Select onValueChange={selectSavedClient}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose from saved clients" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {savedClients.map((client) => (
-                        <SelectItem key={client.id} value={client.id.toString()}>
-                          {client.name} ({client.type})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Search & Select Client (Optional)</Label>
+                  <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={clientSearchOpen}
+                        className="w-full justify-between text-left font-normal"
+                      >
+                        <span className="truncate">
+                          {formData.clientName || "Search clients..."}
+                        </span>
+                        <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search clients by name or contact..." />
+                        <CommandList>
+                          <CommandEmpty>No clients found.</CommandEmpty>
+                          <CommandGroup heading="Saved Clients">
+                            {savedClients.map((client) => (
+                              <CommandItem
+                                key={client.id}
+                                value={`${client.name} ${client.contact} ${client.email}`}
+                                onSelect={() => selectSavedClient(client.id.toString())}
+                                className="cursor-pointer"
+                              >
+                                <div className="flex flex-col w-full">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">{client.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {client.type}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    📞 {client.contact} • ✉️ {client.email}
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
@@ -205,23 +255,68 @@ const AdForm = () => {
                     required
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clientContact">Client Contact *</Label>
+                  <Input
+                    id="clientContact"
+                    placeholder="Client phone/email"
+                    value={formData.clientContact}
+                    onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Select Saved Agent (Optional)</Label>
-                  <Select onValueChange={selectSavedAgent}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose from saved agents" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {savedAgents.map((agent) => (
-                        <SelectItem key={agent.id} value={agent.id.toString()}>
-                          {agent.name} - {agent.agency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Search & Select Agent (Optional)</Label>
+                  <Popover open={agentSearchOpen} onOpenChange={setAgentSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={agentSearchOpen}
+                        className="w-full justify-between text-left font-normal"
+                      >
+                        <span className="truncate">
+                          {formData.agentName || "Search agents..."}
+                        </span>
+                        <Building className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search agents by name, contact, or agency..." />
+                        <CommandList>
+                          <CommandEmpty>No agents found.</CommandEmpty>
+                          <CommandGroup heading="Saved Agents">
+                            {savedAgents.map((agent) => (
+                              <CommandItem
+                                key={agent.id}
+                                value={`${agent.name} ${agent.contact} ${agent.email} ${agent.agency}`}
+                                onSelect={() => selectSavedAgent(agent.id.toString())}
+                                className="cursor-pointer"
+                              >
+                                <div className="flex flex-col w-full">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">{agent.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {agent.agency}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    📞 {agent.contact} • ✉️ {agent.email}
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
@@ -250,15 +345,18 @@ const AdForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contact">Contact Information *</Label>
+            <Label htmlFor="contact">Advertisement Contact Information *</Label>
             <Input
               id="contact"
-              placeholder="Phone, email, or address"
+              placeholder="Contact info to display in the ad (phone, email, address)"
               value={formData.contactInfo}
               onChange={(e) => setFormData({...formData, contactInfo: e.target.value})}
               className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               required
             />
+            <p className="text-xs text-muted-foreground">
+              This contact info will be displayed in the advertisement for readers to reach out
+            </p>
           </div>
 
           {/* Publication Dates - Multiple Date Selection */}
