@@ -49,8 +49,8 @@ const AdForm = () => {
     agentContact: ""
   });
 
-  // Expanded mock data for better testing
-  const [savedClients] = useState([
+  // Saved clients and agents - using state to allow dynamic updates
+  const [savedClients, setSavedClients] = useState([
     { id: 1, name: "John Smith", type: "individual", contact: "+1-555-0101", email: "john@email.com" },
     { id: 2, name: "ABC Real Estate", type: "agency", contact: "+1-555-0102", email: "info@abcrealty.com" },
     { id: 3, name: "Sarah Johnson", type: "individual", contact: "+1-555-0103", email: "sarah@email.com" },
@@ -63,7 +63,7 @@ const AdForm = () => {
     { id: 10, name: "Metro Properties", type: "agency", contact: "+1-555-0110", email: "info@metroproperties.com" }
   ]);
 
-  const [savedAgents] = useState([
+  const [savedAgents, setSavedAgents] = useState([
     { id: 1, name: "Mike Wilson", contact: "+1-555-0201", email: "mike@newsagency.com", agency: "News Agency Pro" },
     { id: 2, name: "Lisa Chen", contact: "+1-555-0202", email: "lisa@adpartners.com", agency: "Ad Partners" },
     { id: 3, name: "David Brown", contact: "+1-555-0203", email: "david@mediagroup.com", agency: "Media Group" },
@@ -303,7 +303,68 @@ Please sign and return this order copy.
     });
   };
 
+  const saveNewClientToDatabase = () => {
+    // Check if client already exists
+    const existingClient = savedClients.find(
+      client => client.name.toLowerCase() === formData.clientName.toLowerCase() &&
+                client.contact === formData.clientContact
+    );
+    
+    if (!existingClient && formData.clientName.trim() && formData.clientContact.trim()) {
+      const newClient = {
+        id: Math.max(...savedClients.map(c => c.id)) + 1,
+        name: formData.clientName.trim(),
+        type: formData.clientType,
+        contact: formData.clientContact.trim(),
+        email: formData.clientContact.includes('@') ? formData.clientContact.trim() : `${formData.clientName.toLowerCase().replace(/\s+/g, '.')}@email.com`
+      };
+      
+      setSavedClients(prev => [...prev, newClient]);
+      
+      toast({
+        title: "New Client Added",
+        description: `${formData.clientName} has been saved to the client database for future use.`,
+      });
+    }
+  };
+
+  const saveNewAgentToDatabase = () => {
+    // Check if agent already exists and if agent data is provided
+    if (!formData.agentName.trim() || !formData.agentContact.trim()) return;
+    
+    const existingAgent = savedAgents.find(
+      agent => agent.name.toLowerCase() === formData.agentName.toLowerCase() &&
+               agent.contact === formData.agentContact
+    );
+    
+    if (!existingAgent) {
+      const newAgent = {
+        id: Math.max(...savedAgents.map(a => a.id)) + 1,
+        name: formData.agentName.trim(),
+        contact: formData.agentContact.trim(),
+        email: formData.agentContact.includes('@') ? formData.agentContact.trim() : `${formData.agentName.toLowerCase().replace(/\s+/g, '.')}@agency.com`,
+        agency: "Independent Agent" // Default agency name
+      };
+      
+      setSavedAgents(prev => [...prev, newAgent]);
+      
+      toast({
+        title: "New Agent Added",
+        description: `${formData.agentName} has been saved to the agent database for future use.`,
+      });
+    }
+  };
+
   const confirmSubmission = () => {
+    // Save new client/agent data to databases before submission
+    if (!isClientFromDropdown) {
+      saveNewClientToDatabase();
+    }
+    
+    if (!isAgentFromDropdown && formData.agentName.trim()) {
+      saveNewAgentToDatabase();
+    }
+    
     toast({
       title: "Advertisement Submitted Successfully!",
       description: "Your ad has been submitted for review and will be published on the selected dates.",
