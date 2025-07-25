@@ -23,6 +23,8 @@ const Index = () => {
         return <Schedule />;
       case "settings":
         return <Settings />;
+      case "all-ads":
+        return <AdDashboard showAllAds={true} />;
       case "my-ads":
       case "dashboard":
       default:

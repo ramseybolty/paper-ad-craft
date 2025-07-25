@@ -8,7 +8,11 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
 
-const AdDashboard = () => {
+interface AdDashboardProps {
+  showAllAds?: boolean;
+}
+
+const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -196,14 +200,16 @@ const AdDashboard = () => {
     switch (status) {
       case "published":
         return <Badge className="bg-success text-success-foreground"><CheckCircle className="h-3 w-3 mr-1" />Published</Badge>;
-      case "pending":
-        return <Badge className="bg-warning text-warning-foreground"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case "scheduled":
+        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Scheduled</Badge>;
       case "cancelled":
-        return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
+        return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  const pageTitle = showAllAds ? "All Advertisements" : "My Advertisements";
 
   const stats = [
     { label: "Total Ads", value: "12", icon: BarChart3, color: "text-primary" },
@@ -214,7 +220,12 @@ const AdDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">{pageTitle}</h1>
+        <Badge variant="outline" className="text-sm">
+          {filteredAds.length} {filteredAds.length === 1 ? 'ad' : 'ads'}
+        </Badge>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <Card key={index} className="shadow-card">
