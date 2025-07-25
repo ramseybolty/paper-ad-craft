@@ -72,7 +72,7 @@ const Schedule = () => {
       size: "2x8",
       publishDate: "2024-02-16",
       publishTime: "09:30",
-      status: "ready",
+      status: "scheduled",
       category: "services",
       priority: "medium",
       notes: "Include company logo, colorful design",
@@ -88,7 +88,7 @@ const Schedule = () => {
       size: "4x6",
       publishDate: "2024-02-16",
       publishTime: "10:15",
-      status: "pending-approval",
+      status: "scheduled",
       category: "automotive",
       priority: "medium",
       notes: "Include high-quality car images",
@@ -136,7 +136,7 @@ const Schedule = () => {
       size: "6x8",
       publishDate: "2024-02-16",
       publishTime: "12:30",
-      status: "ready",
+      status: "scheduled",
       category: "services",
       priority: "medium",
       notes: "Include portfolio samples",
@@ -168,7 +168,7 @@ const Schedule = () => {
       size: "2x6",
       publishDate: "2024-02-16",
       publishTime: "15:30",
-      status: "pending-approval",
+      status: "scheduled",
       category: "education",
       priority: "low",
       notes: "PhD credentials to be highlighted",
@@ -184,7 +184,7 @@ const Schedule = () => {
       size: "4x8",
       publishDate: "2024-02-16",
       publishTime: "16:00",
-      status: "ready",
+      status: "scheduled",
       category: "food-beverage",
       priority: "urgent",
       notes: "Opening date is this weekend",
@@ -232,7 +232,7 @@ const Schedule = () => {
       size: "2x4",
       publishDate: "2024-02-17",
       publishTime: "09:00",
-      status: "ready",
+      status: "scheduled",
       category: "services",
       priority: "medium",
       notes: "Emergency contact must be prominent",
@@ -309,15 +309,11 @@ const Schedule = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
-        return <Badge className="bg-blue-100 text-blue-800"><Clock className="h-3 w-3 mr-1" />Scheduled</Badge>;
-      case "ready":
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Ready</Badge>;
-      case "pending-approval":
-        return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="h-3 w-3 mr-1" />Pending</Badge>;
+        return <Badge variant="secondary">Scheduled</Badge>;
       case "published":
-        return <Badge className="bg-success text-success-foreground"><CheckCircle className="h-3 w-3 mr-1" />Published</Badge>;
+        return <Badge variant="default">Published</Badge>;
       case "cancelled":
-        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
+        return <Badge variant="destructive">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -365,11 +361,11 @@ const Schedule = () => {
   const todayStats = filteredAds.reduce((acc, ad) => {
     acc.total++;
     if (ad.status === "scheduled") acc.scheduled++;
-    if (ad.status === "ready") acc.ready++;
     if (ad.status === "published") acc.published++;
+    if (ad.status === "cancelled") acc.cancelled++;
     if (ad.priority === "urgent") acc.urgent++;
     return acc;
-  }, { total: 0, scheduled: 0, ready: 0, published: 0, urgent: 0 });
+  }, { total: 0, scheduled: 0, published: 0, cancelled: 0, urgent: 0 });
 
   return (
     <div className="space-y-6">
@@ -430,12 +426,12 @@ const Schedule = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Ready</p>
-                <p className="text-2xl font-bold text-success">{todayStats.ready}</p>
-                <p className="text-xs text-muted-foreground">To publish</p>
+                <p className="text-sm text-muted-foreground">Published</p>
+                <p className="text-2xl font-bold text-green-600">{todayStats.published}</p>
+                <p className="text-xs text-muted-foreground">Live</p>
               </div>
-              <div className="p-2 bg-success/10 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-success" />
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -445,12 +441,12 @@ const Schedule = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Published</p>
-                <p className="text-2xl font-bold text-green-600">{todayStats.published}</p>
-                <p className="text-xs text-muted-foreground">Live</p>
+                <p className="text-sm text-muted-foreground">Cancelled</p>
+                <p className="text-2xl font-bold text-destructive">{todayStats.cancelled}</p>
+                <p className="text-xs text-muted-foreground">Stopped</p>
               </div>
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <XCircle className="h-5 w-5 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -511,8 +507,6 @@ const Schedule = () => {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="ready">Ready</SelectItem>
-                  <SelectItem value="pending-approval">Pending</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

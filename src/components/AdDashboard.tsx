@@ -45,7 +45,7 @@ const AdDashboard = () => {
         title: "Professional Web Design Services", 
         category: "Services",
         page: "inner-color",
-        status: "pending",
+        status: "scheduled",
         columns: "2",
         centimeters: "8",
         words: "",
@@ -284,8 +284,8 @@ const AdDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
