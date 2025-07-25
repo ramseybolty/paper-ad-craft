@@ -10,6 +10,7 @@ const AdDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pageFilter, setPageFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("");  // New date filter
 
   const mockAds = [
     {
@@ -18,7 +19,6 @@ const AdDashboard = () => {
       category: "Real Estate",
       page: "front",
       status: "published",
-      views: 234,
       columns: "3",
       centimeters: "12",
       words: "",
@@ -36,7 +36,6 @@ const AdDashboard = () => {
       category: "Services",
       page: "inner-color",
       status: "pending",
-      views: 0,
       columns: "2",
       centimeters: "8",
       words: "",
@@ -54,7 +53,6 @@ const AdDashboard = () => {
       category: "Automotive", 
       page: "back",
       status: "published",
-      views: 156,
       columns: "4",
       centimeters: "15",
       words: "",
@@ -72,7 +70,6 @@ const AdDashboard = () => {
       category: "Jobs",
       page: "inner-bw",
       status: "expired",
-      views: 89,
       columns: "5",
       centimeters: "20",
       words: "",
@@ -90,7 +87,6 @@ const AdDashboard = () => {
       category: "Personal",
       page: "classifieds",
       status: "published",
-      views: 45,
       columns: "",
       centimeters: "",
       words: "25",
@@ -108,7 +104,6 @@ const AdDashboard = () => {
       category: "Personal",
       page: "classifieds",
       status: "published",
-      views: 78,
       columns: "",
       centimeters: "",
       words: "15",
@@ -129,8 +124,12 @@ const AdDashboard = () => {
                          ad.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || ad.status === statusFilter;
     const matchesPage = pageFilter === "all" || ad.page === pageFilter;
+    const matchesDate = !dateFilter || ad.publishDates.some(date => 
+      new Date(date).toLocaleDateString().includes(dateFilter) ||
+      date.includes(dateFilter)
+    );
     
-    return matchesSearch && matchesStatus && matchesPage;
+    return matchesSearch && matchesStatus && matchesPage && matchesDate;
   });
 
   const getPageBadge = (page: string) => {
@@ -174,7 +173,7 @@ const AdDashboard = () => {
     { label: "Total Ads", value: "12", icon: BarChart3, color: "text-primary" },
     { label: "Active", value: "8", icon: CheckCircle, color: "text-success" },
     { label: "Pending", value: "2", icon: Clock, color: "text-warning" },
-    { label: "Total Views", value: "1,234", icon: Eye, color: "text-accent" }
+    { label: "Expired", value: "2", icon: AlertCircle, color: "text-destructive" }
   ];
 
   return (
@@ -209,7 +208,14 @@ const AdDashboard = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Input
+                placeholder="Search by date (YYYY-MM-DD)"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="w-48"
+                type="date"
+              />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Status" />
@@ -262,7 +268,6 @@ const AdDashboard = () => {
                   <th className="text-left p-4 font-medium text-foreground">Category</th>
                   <th className="text-left p-4 font-medium text-foreground">Status</th>
                   <th className="text-left p-4 font-medium text-foreground">Size</th>
-                  <th className="text-left p-4 font-medium text-foreground">Views</th>
                   <th className="text-left p-4 font-medium text-foreground">Agent</th>
                   <th className="text-left p-4 font-medium text-foreground">Publication Dates</th>
                   <th className="text-right p-4 font-medium text-foreground">Actions</th>
@@ -310,12 +315,6 @@ const AdDashboard = () => {
                         ) : (
                           <span className="text-xs text-muted-foreground">Auto</span>
                         )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-1">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{ad.views}</span>
                       </div>
                     </td>
                     <td className="p-4">
