@@ -29,6 +29,8 @@ interface PaymentHistoryProps {
   onAddPayment: (payment: Omit<Payment, 'id'>) => void;
 }
 
+import { format } from "date-fns";
+
 const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayment }: PaymentHistoryProps) => {
   const { toast } = useToast();
   const [isAddingPayment, setIsAddingPayment] = useState(false);
@@ -40,6 +42,11 @@ const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayme
     method: "cash" as const,
     notes: ""
   });
+
+  // Date formatting utility
+  const formatDate = (date: string | Date) => {
+    return format(new Date(date), "dd/MM/yyyy");
+  };
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = totalAmount - totalPaid;
@@ -266,7 +273,7 @@ const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayme
                     </div>
                     <div className="text-sm text-muted-foreground flex items-center space-x-1">
                       <Calendar className="h-3 w-3" />
-                      <span>{new Date(payment.date).toLocaleDateString()}</span>
+                      <span>{formatDate(payment.date)}</span>
                     </div>
                   </div>
                   

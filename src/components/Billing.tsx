@@ -53,7 +53,10 @@ const Billing = () => {
   // Mock user role - in real implementation this would come from auth context
   const currentUserRole = "admin"; // admin, staff, accountant
 
-  // Available agents for search
+  // Date formatting utility
+  const formatDate = (date: string | Date) => {
+    return format(new Date(date), "dd/MM/yyyy");
+  };
   const availableAgents = ["Raj Kumar", "Priya Sharma", "Amit Singh", "Suresh Patel"];
 
   // Mock ads with billing information and enhanced payment structure
@@ -533,10 +536,10 @@ const Billing = () => {
                     {dateRange.from ? (
                       dateRange.to ? (
                         <>
-                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                          {formatDate(dateRange.from)} - {formatDate(dateRange.to)}
                         </>
                       ) : (
-                        format(dateRange.from, "LLL dd, y")
+                        formatDate(dateRange.from)
                       )
                     ) : (
                       "Pick date range"
@@ -636,9 +639,9 @@ const Billing = () => {
                             </Button>
                           </div>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Due: {new Date(ad.dueDate).toLocaleDateString()}
-                        </p>
+                         <p className="text-xs text-muted-foreground">
+                           Due: {formatDate(ad.dueDate)}
+                         </p>
                       </div>
                     </td>
                     <td className="p-4">
