@@ -1,20 +1,31 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle, Search, Filter } from "lucide-react";
+import { useState } from "react";
 
 const AdDashboard = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [pageFilter, setPageFilter] = useState("all");
+
   const mockAds = [
     {
       id: 1,
       title: "Beautiful Downtown Apartment for Rent",
       category: "Real Estate",
+      page: "front",
       status: "published",
       views: 234,
       columns: "3",
       centimeters: "12",
+      words: "",
+      instructions: "Include property photos in layout",
       clientName: "John Smith",
       clientType: "individual",
+      clientContact: "+1-555-0101",
       agentName: "Mike Wilson",
       agentContact: "mike@newsagency.com",
       publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"]
@@ -23,12 +34,16 @@ const AdDashboard = () => {
       id: 2,
       title: "Professional Web Design Services", 
       category: "Services",
+      page: "inner-color",
       status: "pending",
       views: 0,
       columns: "2",
       centimeters: "8",
+      words: "",
+      instructions: "",
       clientName: "ABC Digital Agency",
       clientType: "agency",
+      clientContact: "+1-555-0102",
       agentName: "",
       agentContact: "",
       publishDates: ["2024-02-01", "2024-02-08"]
@@ -37,12 +52,16 @@ const AdDashboard = () => {
       id: 3,
       title: "2019 Honda Civic - Excellent Condition",
       category: "Automotive", 
+      page: "back",
       status: "published",
       views: 156,
       columns: "4",
       centimeters: "15",
+      words: "",
+      instructions: "Use bold headers for price",
       clientName: "Sarah Johnson",
       clientType: "individual",
+      clientContact: "+1-555-0103",
       agentName: "Lisa Chen",
       agentContact: "lisa@adpartners.com",
       publishDates: ["2024-01-12", "2024-01-19"]
@@ -51,17 +70,92 @@ const AdDashboard = () => {
       id: 4,
       title: "Marketing Manager Position Available",
       category: "Jobs",
+      page: "inner-bw",
       status: "expired",
       views: 89,
       columns: "5",
       centimeters: "20",
+      words: "",
+      instructions: "Rush placement needed",
       clientName: "Prime Motors Ltd",
       clientType: "agency",
+      clientContact: "+1-555-0104",
       agentName: "David Brown",
       agentContact: "david@mediagroup.com",
       publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"]
+    },
+    {
+      id: 5,
+      title: "Lost Cat - Reward Offered",
+      category: "Personal",
+      page: "classifieds",
+      status: "published",
+      views: 45,
+      columns: "",
+      centimeters: "",
+      words: "25",
+      instructions: "",
+      clientName: "Maria Garcia",
+      clientType: "individual",
+      clientContact: "+1-555-0105",
+      agentName: "",
+      agentContact: "",
+      publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"]
+    },
+    {
+      id: 6,
+      title: "Garage Sale - Everything Must Go",
+      category: "Personal",
+      page: "classifieds",
+      status: "published",
+      views: 78,
+      columns: "",
+      centimeters: "",
+      words: "15",
+      instructions: "Bold the date and address",
+      clientName: "Robert Wilson",
+      clientType: "individual",
+      clientContact: "+1-555-0106",
+      agentName: "",
+      agentContact: "",
+      publishDates: ["2024-01-25"]
     }
   ];
+
+  // Filter logic
+  const filteredAds = mockAds.filter((ad) => {
+    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ad.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || ad.status === statusFilter;
+    const matchesPage = pageFilter === "all" || ad.page === pageFilter;
+    
+    return matchesSearch && matchesStatus && matchesPage;
+  });
+
+  const getPageBadge = (page: string) => {
+    const pageLabels: { [key: string]: string } = {
+      "front": "Front Page",
+      "back": "Back Page", 
+      "inner-color": "Inner Color",
+      "inner-bw": "Inner B&W",
+      "classifieds": "Classifieds"
+    };
+    
+    const colors: { [key: string]: string } = {
+      "front": "bg-red-100 text-red-800",
+      "back": "bg-blue-100 text-blue-800",
+      "inner-color": "bg-green-100 text-green-800",
+      "inner-bw": "bg-gray-100 text-gray-800",
+      "classifieds": "bg-yellow-100 text-yellow-800"
+    };
+
+    return (
+      <Badge className={`text-xs ${colors[page] || "bg-gray-100 text-gray-800"}`}>
+        {pageLabels[page] || page}
+      </Badge>
+    );
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -102,20 +196,68 @@ const AdDashboard = () => {
         ))}
       </div>
 
+      {/* Search and Filter Section */}
+      <Card className="shadow-card">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by title, client, or category..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={pageFilter} onValueChange={setPageFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Page" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Pages</SelectItem>
+                  <SelectItem value="front">Front</SelectItem>
+                  <SelectItem value="back">Back</SelectItem>
+                  <SelectItem value="inner-color">Inner Color</SelectItem>
+                  <SelectItem value="inner-bw">Inner B&W</SelectItem>
+                  <SelectItem value="classifieds">Classifieds</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Ads Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            <span>Your Advertisements</span>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span>Your Advertisements</span>
+            </CardTitle>
+            <div className="text-sm text-muted-foreground">
+              Showing {filteredAds.length} of {mockAds.length} ads
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th className="text-left p-4 font-medium text-foreground">Title</th>
+                  <th className="text-left p-4 font-medium text-foreground">Title & Page</th>
                   <th className="text-left p-4 font-medium text-foreground">Client</th>
                   <th className="text-left p-4 font-medium text-foreground">Category</th>
                   <th className="text-left p-4 font-medium text-foreground">Status</th>
@@ -127,22 +269,30 @@ const AdDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockAds.map((ad) => (
+                {filteredAds.map((ad) => (
                   <tr key={ad.id} className="border-b hover:bg-muted/30 transition-colors">
                     <td className="p-4">
                       <div>
                         <p className="font-medium text-foreground truncate max-w-48">{ad.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {ad.publishDates.length} publication{ad.publishDates.length !== 1 ? 's' : ''}
-                        </p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          {getPageBadge(ad.page)}
+                          {ad.instructions && (
+                            <Badge variant="outline" className="text-xs" title={ad.instructions}>
+                              Instructions
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="p-4">
                       <div>
                         <p className="font-medium text-foreground">{ad.clientName}</p>
-                        <Badge variant="outline" className="text-xs">
-                          {ad.clientType === "individual" ? "Individual" : "Agency"}
-                        </Badge>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {ad.clientType === "individual" ? "Individual" : "Agency"}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{ad.clientContact}</span>
+                        </div>
                       </div>
                     </td>
                     <td className="p-4">
@@ -153,7 +303,9 @@ const AdDashboard = () => {
                     </td>
                     <td className="p-4">
                       <div className="text-muted-foreground">
-                        {ad.columns && ad.centimeters ? (
+                        {ad.page === "classifieds" ? (
+                          <span className="text-sm">{ad.words} words</span>
+                        ) : ad.columns && ad.centimeters ? (
                           <span>{ad.columns}×{ad.centimeters}cm</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">Auto</span>
@@ -194,13 +346,13 @@ const AdDashboard = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" title="View Details">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" title="Edit Advertisement">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" title="Delete Advertisement">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
