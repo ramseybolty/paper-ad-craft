@@ -141,10 +141,13 @@ const AdDashboard = () => {
       const to = toDate ? new Date(toDate) : null;
       
       if (from && to) {
+        // Both dates selected - range filter
         return adDate >= from && adDate <= to;
-      } else if (from) {
-        return adDate >= from;
-      } else if (to) {
+      } else if (from && !to) {
+        // Only from date selected - exact date match
+        return adDate.toDateString() === from.toDateString();
+      } else if (to && !from) {
+        // Only to date selected - filter for dates up to this date
         return adDate <= to;
       }
       return true;
