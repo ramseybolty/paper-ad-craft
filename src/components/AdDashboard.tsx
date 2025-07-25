@@ -8,6 +8,7 @@ import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle, Search, 
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
+import EditAdModal from "./EditAdModal";
 
 interface AdDashboardProps {
   showAllAds?: boolean;
@@ -23,6 +24,8 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [ads, setAds] = useState<any[]>([]);
+  const [editingAd, setEditingAd] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Load ads from localStorage on component mount
   useEffect(() => {
@@ -223,10 +226,11 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
 
   const handleEditAd = (adId: number) => {
     console.log('Editing ad:', adId);
-    toast({
-      title: "Edit Advertisement", 
-      description: `Opening edit form for advertisement ID: ${adId}`,
-    });
+    const adToEdit = ads.find(ad => ad.id === adId);
+    if (adToEdit) {
+      setEditingAd(adToEdit);
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleDeleteAd = (adId: number) => {
@@ -247,6 +251,26 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
 
   const confirmDeleteAd = (adId: number) => {
     handleDeleteAd(adId);
+  };
+
+  const handleSaveEditedAd = (updatedAd: any) => {
+    const updatedAds = ads.map(ad => 
+      ad.id === updatedAd.id ? updatedAd : ad
+    );
+    setAds(updatedAds);
+    
+    // Update localStorage
+    const savedAds = updatedAds.filter(ad => !ad.id || ad.id > 1000); // Only save user-created ads
+    localStorage.setItem('userAds', JSON.stringify(savedAds));
+    localStorage.setItem('newsprint-ads', JSON.stringify(updatedAds));
+    
+    setEditingAd(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingAd(null);
+    setIsEditModalOpen(false);
   };
 
   const stats = [
@@ -539,6 +563,14 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Modal */}
+      <EditAdModal
+        ad={editingAd}
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveEditedAd}
+      />
     </div>
   );
 };
