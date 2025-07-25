@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,13 @@ const AdForm = () => {
   const [isClientFromDropdown, setIsClientFromDropdown] = useState(false);
   const [isAgentFromDropdown, setIsAgentFromDropdown] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [availablePageLayouts, setAvailablePageLayouts] = useState([
+    { id: 1, name: "Front Page", value: "front", rate: "2000", active: true, description: "Premium front page placement" },
+    { id: 2, name: "Back Page", value: "back", rate: "1500", active: true, description: "High visibility back page" },
+    { id: 3, name: "Inner Color", value: "inner-color", rate: "1200", active: true, description: "Color inner pages" },
+    { id: 4, name: "Inner B&W", value: "inner-bw", rate: "800", active: true, description: "Black & white inner pages" },
+    { id: 5, name: "Classifieds", value: "classifieds", rate: "5", active: true, description: "Classified section (per word)" }
+  ]);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -49,6 +56,15 @@ const AdForm = () => {
     agentName: "",
     agentContact: ""
   });
+
+  // Load page layouts from settings on component mount
+  useEffect(() => {
+    const savedLayouts = localStorage.getItem('newsprint-page-layouts');
+    if (savedLayouts) {
+      const layouts = JSON.parse(savedLayouts);
+      setAvailablePageLayouts(layouts);
+    }
+  }, []);
 
   // Saved clients and agents - using state to allow dynamic updates
   const [savedClients, setSavedClients] = useState([
@@ -459,11 +475,13 @@ Please sign and return this order copy.
                   <SelectValue placeholder="Select page" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="front">Front</SelectItem>
-                  <SelectItem value="back">Back</SelectItem>
-                  <SelectItem value="inner-color">Inner Color</SelectItem>
-                  <SelectItem value="inner-bw">Inner B&W</SelectItem>
-                  <SelectItem value="classifieds">Classifieds</SelectItem>
+                  {availablePageLayouts
+                    .filter(layout => layout.active)
+                    .map((layout) => (
+                      <SelectItem key={layout.value} value={layout.value}>
+                        {layout.name} - ₹{layout.rate}{layout.value === "classifieds" ? "/word" : "/column inch"}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

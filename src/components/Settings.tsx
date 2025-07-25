@@ -25,7 +25,12 @@ import {
   IndianRupee,
   FileText,
   Clock,
-  Printer
+  Printer,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -97,7 +102,92 @@ const Settings = () => {
     minimumClassifiedCharge: "50"
   });
 
+  // Page Layouts Management
+  const [pageLayouts, setPageLayouts] = useState([
+    { id: 1, name: "Front Page", value: "front", rate: "2000", active: true, description: "Premium front page placement" },
+    { id: 2, name: "Back Page", value: "back", rate: "1500", active: true, description: "High visibility back page" },
+    { id: 3, name: "Inner Color", value: "inner-color", rate: "1200", active: true, description: "Color inner pages" },
+    { id: 4, name: "Inner B&W", value: "inner-bw", rate: "800", active: true, description: "Black & white inner pages" },
+    { id: 5, name: "Classifieds", value: "classifieds", rate: "5", active: true, description: "Classified section (per word)" }
+  ]);
+
+  const [newLayout, setNewLayout] = useState({
+    name: "",
+    value: "",
+    rate: "",
+    description: "",
+    active: true
+  });
+
+  // Page Layout Management Functions
+  const addNewLayout = () => {
+    if (!newLayout.name || !newLayout.value || !newLayout.rate) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if value already exists
+    if (pageLayouts.some(layout => layout.value === newLayout.value)) {
+      toast({
+        title: "Duplicate Value",
+        description: "Page value already exists. Please use a unique value.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const layout = {
+      id: Math.max(...pageLayouts.map(l => l.id)) + 1,
+      ...newLayout
+    };
+
+    setPageLayouts([...pageLayouts, layout]);
+    setNewLayout({ name: "", value: "", rate: "", description: "", active: true });
+    
+    // Save to localStorage
+    localStorage.setItem('newsprint-page-layouts', JSON.stringify([...pageLayouts, layout]));
+
+    toast({
+      title: "Layout Added",
+      description: `${newLayout.name} has been added successfully`,
+    });
+  };
+
+  const toggleLayoutActive = (id: number) => {
+    const updated = pageLayouts.map(layout => 
+      layout.id === id ? { ...layout, active: !layout.active } : layout
+    );
+    setPageLayouts(updated);
+    localStorage.setItem('newsprint-page-layouts', JSON.stringify(updated));
+    
+    toast({
+      title: "Layout Updated",
+      description: "Layout visibility has been updated",
+    });
+  };
+
+  const deleteLayout = (id: number) => {
+    const layout = pageLayouts.find(l => l.id === id);
+    if (!layout) return;
+
+    const updated = pageLayouts.filter(l => l.id !== id);
+    setPageLayouts(updated);
+    localStorage.setItem('newsprint-page-layouts', JSON.stringify(updated));
+
+    toast({
+      title: "Layout Deleted",
+      description: `${layout.name} has been removed`,
+    });
+  };
+
   const handleSaveSettings = (section: string) => {
+    if (section === "Layout & Pricing") {
+      localStorage.setItem('newsprint-page-layouts', JSON.stringify(pageLayouts));
+    }
     toast({
       title: "Settings Saved",
       description: `${section} settings have been updated successfully`,
@@ -540,77 +630,116 @@ const Settings = () => {
 
         {/* Layout & Pricing Settings */}
         <TabsContent value="layout" className="space-y-6">
+          {/* Add New Layout Form */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Plus className="h-5 w-5 text-primary" />
+                <span>Add New Page Layout</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="layout-name">Layout Name *</Label>
+                  <Input
+                    id="layout-name"
+                    placeholder="e.g., Sports Section"
+                    value={newLayout.name}
+                    onChange={(e) => setNewLayout({...newLayout, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="layout-value">Value (Internal) *</Label>
+                  <Input
+                    id="layout-value"
+                    placeholder="e.g., sports-section"
+                    value={newLayout.value}
+                    onChange={(e) => setNewLayout({...newLayout, value: e.target.value.toLowerCase().replace(/\s+/g, '-')})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="layout-rate">Rate (₹) *</Label>
+                  <Input
+                    id="layout-rate"
+                    type="number"
+                    placeholder="e.g., 1000"
+                    value={newLayout.rate}
+                    onChange={(e) => setNewLayout({...newLayout, rate: e.target.value})}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={addNewLayout} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Layout
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="layout-description">Description</Label>
+                <Input
+                  id="layout-description"
+                  placeholder="Brief description of the layout"
+                  value={newLayout.description}
+                  onChange={(e) => setNewLayout({...newLayout, description: e.target.value})}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Existing Layouts Management */}
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Printer className="h-5 w-5 text-primary" />
-                <span>Page Layout & Pricing</span>
+                <span>Manage Page Layouts</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="front-page-rate">Front Page Rate (₹ per column inch)</Label>
-                    <Input
-                      id="front-page-rate"
-                      type="number"
-                      value={layoutSettings.frontPageRate}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, frontPageRate: e.target.value})}
-                    />
+            <CardContent>
+              <div className="space-y-4">
+                {pageLayouts.map((layout) => (
+                  <div key={layout.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={layout.active}
+                          onCheckedChange={() => toggleLayoutActive(layout.id)}
+                        />
+                        {layout.active ? (
+                          <Eye className="h-4 w-4 text-success" />
+                        ) : (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-foreground">{layout.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Value: {layout.value} | Rate: ₹{layout.rate}
+                          {layout.value === "classifieds" ? "/word" : "/column inch"}
+                        </p>
+                        {layout.description && (
+                          <p className="text-xs text-muted-foreground italic">{layout.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={layout.active ? "default" : "secondary"}>
+                        {layout.active ? "Active" : "Inactive"}
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => deleteLayout(layout.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="back-page-rate">Back Page Rate (₹ per column inch)</Label>
-                    <Input
-                      id="back-page-rate"
-                      type="number"
-                      value={layoutSettings.backPageRate}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, backPageRate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="inner-color-rate">Inner Color Page Rate (₹ per column inch)</Label>
-                    <Input
-                      id="inner-color-rate"
-                      type="number"
-                      value={layoutSettings.innerColorRate}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, innerColorRate: e.target.value})}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="inner-bw-rate">Inner B&W Page Rate (₹ per column inch)</Label>
-                    <Input
-                      id="inner-bw-rate"
-                      type="number"
-                      value={layoutSettings.innerBWRate}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, innerBWRate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="classified-word-rate">Classified Rate (₹ per word)</Label>
-                    <Input
-                      id="classified-word-rate"
-                      type="number"
-                      value={layoutSettings.classifiedWordRate}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, classifiedWordRate: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="minimum-classified">Minimum Classified Charge (₹)</Label>
-                    <Input
-                      id="minimum-classified"
-                      type="number"
-                      value={layoutSettings.minimumClassifiedCharge}
-                      onChange={(e) => setLayoutSettings({...layoutSettings, minimumClassifiedCharge: e.target.value})}
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
               
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3 mt-6">
                 <Button variant="outline" onClick={() => handleResetSettings("Layout & Pricing")}>
                   Reset
                 </Button>
