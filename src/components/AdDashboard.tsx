@@ -4,128 +4,139 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle, Search, Filter } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const AdDashboard = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [pageFilter, setPageFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");  // New category filter
-  const [agentFilter, setAgentFilter] = useState("all");        // New agent filter
-  const [fromDate, setFromDate] = useState("");               // Date range from
-  const [toDate, setToDate] = useState("");                   // Date range to
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [agentFilter, setAgentFilter] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [ads, setAds] = useState<any[]>([]);
 
-  const mockAds = [
-    {
-      id: 1,
-      title: "Beautiful Downtown Apartment for Rent",
-      category: "Real Estate",
-      page: "front",
-      status: "published",
-      columns: "3",
-      centimeters: "12",
-      words: "",
-      instructions: "Include property photos in layout",
-      clientName: "John Smith",
-      clientType: "individual",
-      clientContact: "+1-555-0101",
-      agentName: "Mike Wilson",
-      agentContact: "mike@newsagency.com",
-      publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"]
-    },
-    {
-      id: 2,
-      title: "Professional Web Design Services", 
-      category: "Services",
-      page: "inner-color",
-      status: "pending",
-      columns: "2",
-      centimeters: "8",
-      words: "",
-      instructions: "",
-      clientName: "ABC Digital Agency",
-      clientType: "agency",
-      clientContact: "+1-555-0102",
-      agentName: "",
-      agentContact: "",
-      publishDates: ["2024-02-01", "2024-02-08"]
-    },
-    {
-      id: 3,
-      title: "2019 Honda Civic - Excellent Condition",
-      category: "Automotive", 
-      page: "back",
-      status: "published",
-      columns: "4",
-      centimeters: "15",
-      words: "",
-      instructions: "Use bold headers for price",
-      clientName: "Sarah Johnson",
-      clientType: "individual",
-      clientContact: "+1-555-0103",
-      agentName: "Lisa Chen",
-      agentContact: "lisa@adpartners.com",
-      publishDates: ["2024-01-12", "2024-01-19"]
-    },
-    {
-      id: 4,
-      title: "Marketing Manager Position Available",
-      category: "Jobs",
-      page: "inner-bw",
-      status: "cancelled",
-      columns: "5",
-      centimeters: "20",
-      words: "",
-      instructions: "Rush placement needed",
-      clientName: "Prime Motors Ltd",
-      clientType: "agency",
-      clientContact: "+1-555-0104",
-      agentName: "David Brown",
-      agentContact: "david@mediagroup.com",
-      publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"]
-    },
-    {
-      id: 5,
-      title: "Lost Cat - Reward Offered",
-      category: "Personal",
-      page: "classifieds",
-      status: "published",
-      columns: "",
-      centimeters: "",
-      words: "25",
-      instructions: "",
-      clientName: "Maria Garcia",
-      clientType: "individual",
-      clientContact: "+1-555-0105",
-      agentName: "",
-      agentContact: "",
-      publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"]
-    },
-    {
-      id: 6,
-      title: "Garage Sale - Everything Must Go",
-      category: "Personal",
-      page: "classifieds",
-      status: "published",
-      columns: "",
-      centimeters: "",
-      words: "15",
-      instructions: "Bold the date and address",
-      clientName: "Robert Wilson",
-      clientType: "individual",
-      clientContact: "+1-555-0106",
-      agentName: "",
-      agentContact: "",
-      publishDates: ["2024-01-25"]
-    }
-  ];
+  // Load ads from localStorage on component mount
+  useEffect(() => {
+    const savedAds = JSON.parse(localStorage.getItem('newsprint-ads') || '[]');
+    const defaultAds = [
+      {
+        id: 1,
+        title: "Beautiful Downtown Apartment for Rent",
+        category: "Real Estate",
+        page: "front",
+        status: "published",
+        columns: "3",
+        centimeters: "12",
+        words: "",
+        instructions: "Include property photos in layout",
+        clientName: "John Smith",
+        clientType: "individual",
+        clientContact: "+1-555-0101",
+        agentName: "Mike Wilson",
+        agentContact: "mike@newsagency.com",
+        publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"]
+      },
+      {
+        id: 2,
+        title: "Professional Web Design Services", 
+        category: "Services",
+        page: "inner-color",
+        status: "pending",
+        columns: "2",
+        centimeters: "8",
+        words: "",
+        instructions: "",
+        clientName: "ABC Digital Agency",
+        clientType: "agency",
+        clientContact: "+1-555-0102",
+        agentName: "",
+        agentContact: "",
+        publishDates: ["2024-02-01", "2024-02-08"]
+      },
+      {
+        id: 3,
+        title: "2019 Honda Civic - Excellent Condition",
+        category: "Automotive", 
+        page: "back",
+        status: "published",
+        columns: "4",
+        centimeters: "15",
+        words: "",
+        instructions: "Use bold headers for price",
+        clientName: "Sarah Johnson",
+        clientType: "individual",
+        clientContact: "+1-555-0103",
+        agentName: "Lisa Chen",
+        agentContact: "lisa@adpartners.com",
+        publishDates: ["2024-01-12", "2024-01-19"]
+      },
+      {
+        id: 4,
+        title: "Marketing Manager Position Available",
+        category: "Jobs",
+        page: "inner-bw",
+        status: "cancelled",
+        columns: "5",
+        centimeters: "20",
+        words: "",
+        instructions: "Rush placement needed",
+        clientName: "Prime Motors Ltd",
+        clientType: "agency",
+        clientContact: "+1-555-0104",
+        agentName: "David Brown",
+        agentContact: "david@mediagroup.com",
+        publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"]
+      },
+      {
+        id: 5,
+        title: "Lost Cat - Reward Offered",
+        category: "Personal",
+        page: "classifieds",
+        status: "published",
+        columns: "",
+        centimeters: "",
+        words: "25",
+        instructions: "",
+        clientName: "Maria Garcia",
+        clientType: "individual",
+        clientContact: "+1-555-0105",
+        agentName: "",
+        agentContact: "",
+        publishDates: ["2024-01-20", "2024-01-21", "2024-01-22"]
+      },
+      {
+        id: 6,
+        title: "Garage Sale - Everything Must Go",
+        category: "Personal",
+        page: "classifieds",
+        status: "published",
+        columns: "",
+        centimeters: "",
+        words: "15",
+        instructions: "Bold the date and address",
+        clientName: "Robert Wilson",
+        clientType: "individual",
+        clientContact: "+1-555-0106",
+        agentName: "",
+        agentContact: "",
+        publishDates: ["2024-01-25"]
+      }
+    ];
+    
+    // Merge saved ads with default ads (prioritize saved ads)
+    const allAds = [...defaultAds, ...savedAds];
+    setAds(allAds);
+  }, []);
 
   // Extract unique categories and agents for filters
-  const uniqueCategories = [...new Set(mockAds.map(ad => ad.category))];
-  const uniqueAgents = [...new Set(mockAds.map(ad => ad.agentName).filter(name => name))];
+  const uniqueCategories = [...new Set(ads.map(ad => ad.category))];
+  const uniqueAgents = [...new Set(ads.map(ad => ad.agentName).filter(name => name))];
 
   // Filter logic
-  const filteredAds = mockAds.filter((ad) => {
+  const filteredAds = ads.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -331,7 +342,7 @@ const AdDashboard = () => {
               <span>Your Advertisements</span>
             </CardTitle>
             <div className="text-sm text-muted-foreground">
-              Showing {filteredAds.length} of {mockAds.length} ads
+              Showing {filteredAds.length} of {ads.length} ads
             </div>
           </div>
         </CardHeader>

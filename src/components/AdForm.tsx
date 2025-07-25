@@ -143,12 +143,12 @@ const AdForm = () => {
   ];
 
   const adSizes = [
-    { value: "1x5", label: "1 Column x 5 cm", price: "$15" },
-    { value: "2x8", label: "2 Columns x 8 cm", price: "$35" },
-    { value: "3x10", label: "3 Columns x 10 cm", price: "$65" },
-    { value: "4x12", label: "4 Columns x 12 cm", price: "$95" },
-    { value: "5x15", label: "5 Columns x 15 cm", price: "$140" },
-    { value: "6x20", label: "6 Columns x 20 cm (Full Width)", price: "$220" }
+    { value: "1x5", label: "1 Column x 5 cm", price: "₹150" },
+    { value: "2x8", label: "2 Columns x 8 cm", price: "₹350" },
+    { value: "3x10", label: "3 Columns x 10 cm", price: "₹650" },
+    { value: "4x12", label: "4 Columns x 12 cm", price: "₹950" },
+    { value: "5x15", label: "5 Columns x 15 cm", price: "₹1,400" },
+    { value: "6x20", label: "6 Columns x 20 cm (Full Width)", price: "₹2,200" }
   ];
 
   const resetForm = () => {
@@ -358,6 +358,42 @@ Please sign and return this order copy.
   };
 
   const confirmSubmission = () => {
+    // Create new ad object
+    const newAd = {
+      id: Date.now(), // Simple ID generation
+      title: formData.title,
+      category: formData.category,
+      content: formData.content || "Content to be provided",
+      instructions: formData.instructions || "",
+      page: formData.page,
+      size: formData.page === 'classifieds' 
+        ? `${formData.words} words` 
+        : `${formData.columns}x${formData.centimeters}`,
+      clientName: formData.clientName,
+      clientType: formData.clientType,
+      clientContact: formData.clientContact,
+      agentName: formData.agentName || "",
+      agentContact: formData.agentContact || "",
+      publishDates: publishDates.map(date => date.toISOString().split('T')[0]),
+      status: "scheduled",
+      priority: "medium",
+      createdAt: new Date().toISOString(),
+      baseAmount: formData.page === 'classifieds' 
+        ? parseInt(formData.words) * 5 
+        : parseInt(formData.columns) * parseInt(formData.centimeters) * 80,
+      gst: 0, // Will be calculated
+      totalAmount: 0 // Will be calculated
+    };
+
+    // Calculate GST and total
+    newAd.gst = newAd.baseAmount * 0.05;
+    newAd.totalAmount = newAd.baseAmount + newAd.gst;
+
+    // Save to localStorage for cross-component access
+    const existingAds = JSON.parse(localStorage.getItem('newsprint-ads') || '[]');
+    existingAds.push(newAd);
+    localStorage.setItem('newsprint-ads', JSON.stringify(existingAds));
+
     // Save new client/agent data to databases before submission
     if (!isClientFromDropdown) {
       saveNewClientToDatabase();
@@ -368,8 +404,8 @@ Please sign and return this order copy.
     }
     
     toast({
-      title: "Advertisement Submitted Successfully!",
-      description: "Your ad has been submitted for review and will be published on the selected dates.",
+      title: "Advertisement Scheduled Successfully!",
+      description: `Your ad "${formData.title}" has been scheduled for ${publishDates.length} publication date${publishDates.length > 1 ? 's' : ''}.`,
     });
     
     // Reset form for new entry
@@ -822,7 +858,7 @@ Please sign and return this order copy.
                             Classified Ad: {formData.words} word{formData.words !== "1" ? "s" : ""}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Cost per date: ${(parseInt(formData.words) * 0.5).toFixed(2)} (${0.50}/word)
+                            Cost per date: ₹{(parseInt(formData.words) * 5).toFixed(2)} (₹5/word)
                           </p>
                         </div>
                         <Badge variant="default" className="bg-success text-success-foreground">
@@ -882,7 +918,7 @@ Please sign and return this order copy.
                             Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Cost per date: ${(parseInt(formData.columns) * parseInt(formData.centimeters) * 0.8).toFixed(2)}
+                            Cost per date: ₹{(parseInt(formData.columns) * parseInt(formData.centimeters) * 80).toFixed(2)}
                           </p>
                         </div>
                         <Badge variant="default" className="bg-success text-success-foreground">
