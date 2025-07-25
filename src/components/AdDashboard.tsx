@@ -12,7 +12,8 @@ const AdDashboard = () => {
   const [pageFilter, setPageFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");  // New category filter
   const [agentFilter, setAgentFilter] = useState("all");        // New agent filter
-  const [dateFilter, setDateFilter] = useState("");            // Date filter
+  const [fromDate, setFromDate] = useState("");               // Date range from
+  const [toDate, setToDate] = useState("");                   // Date range to
 
   const mockAds = [
     {
@@ -134,10 +135,20 @@ const AdDashboard = () => {
     const matchesAgent = agentFilter === "all" || 
                         (agentFilter === "no-agent" && !ad.agentName) ||
                         ad.agentName === agentFilter;
-    const matchesDate = !dateFilter || ad.publishDates.some(date => 
-      new Date(date).toLocaleDateString().includes(dateFilter) ||
-      date.includes(dateFilter)
-    );
+    const matchesDate = (!fromDate && !toDate) || ad.publishDates.some(date => {
+      const adDate = new Date(date);
+      const from = fromDate ? new Date(fromDate) : null;
+      const to = toDate ? new Date(toDate) : null;
+      
+      if (from && to) {
+        return adDate >= from && adDate <= to;
+      } else if (from) {
+        return adDate >= from;
+      } else if (to) {
+        return adDate <= to;
+      }
+      return true;
+    });
     
     return matchesSearch && matchesStatus && matchesPage && matchesCategory && matchesAgent && matchesDate;
   });
@@ -219,13 +230,39 @@ const AdDashboard = () => {
               />
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Input
-                placeholder="Search by date (YYYY-MM-DD)"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="w-48"
-                type="date"
-              />
+              <div className="flex gap-1 items-center">
+                <Input
+                  placeholder="From date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="w-36"
+                  type="date"
+                  title="From date"
+                />
+                <span className="text-muted-foreground text-sm">to</span>
+                <Input
+                  placeholder="To date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="w-36"
+                  type="date"
+                  title="To date"
+                />
+                {(fromDate || toDate) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFromDate("");
+                      setToDate("");
+                    }}
+                    className="text-xs px-2"
+                    title="Clear date filter"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Status" />
