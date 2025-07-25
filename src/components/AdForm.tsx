@@ -38,6 +38,7 @@ const AdForm = () => {
     title: "",
     category: "",
     content: "",
+    instructions: "", // New optional instructions field
     page: "", // New page selection field
     columns: "",
     centimeters: "",
@@ -156,6 +157,7 @@ const AdForm = () => {
       title: "",
       category: "",
       content: "",
+      instructions: "",
       page: "",
       columns: "",
       centimeters: "",
@@ -251,6 +253,7 @@ const AdForm = () => {
         : `${formData.columns} columns × ${formData.centimeters} cm`,
       publishDates: publishDates.map(date => date.toLocaleDateString()).join(", "),
       content: formData.content || "Content to be provided",
+      instructions: formData.instructions || "None",
       timestamp: new Date().toLocaleString()
     };
 
@@ -278,6 +281,7 @@ AGENT INFORMATION:
 PUBLICATION DETAILS:
 • Dates: ${orderData.publishDates}
 • Content: ${orderData.content}
+• Special Instructions: ${orderData.instructions}
 
 ===========================================
 Client Signature: ___________________
@@ -438,6 +442,22 @@ Please sign and return this order copy.
               onChange={(e) => setFormData({...formData, content: e.target.value})}
               className="min-h-32 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="instructions">Special Instructions (Optional)</Label>
+            <Textarea
+              id="instructions"
+              placeholder="Any special instructions or notes for the advertisement..."
+              value={formData.instructions}
+              onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+              className="min-h-16 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+              maxLength={200}
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              Optional field for special requirements, layout preferences, or other notes (max 200 characters)
+            </p>
           </div>
 
           {/* Client and Agent Information */}
