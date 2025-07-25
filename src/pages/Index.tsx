@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import AdForm from "@/components/AdForm";
 import AdDashboard from "@/components/AdDashboard";
+import Analytics from "@/components/Analytics";
 
 const Index = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -11,6 +12,8 @@ const Index = () => {
     switch (activeView) {
       case "create-ad":
         return <AdForm />;
+      case "analytics":
+        return <Analytics />;
       case "my-ads":
       case "dashboard":
       default:
