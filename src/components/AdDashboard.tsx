@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, Edit, Trash2, BarChart3, Clock, CheckCircle, AlertCircle, Search, Filter } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { formatDate, formatDateForInput } from "@/lib/utils";
 
 const AdDashboard = () => {
   const { toast } = useToast();
@@ -156,7 +157,7 @@ const AdDashboard = () => {
         return adDate >= from && adDate <= to;
       } else if (from && !to) {
         // Only from date selected - exact date match
-        return adDate.toDateString() === from.toDateString();
+        return formatDateForInput(adDate) === formatDateForInput(from);
       } else if (to && !from) {
         // Only to date selected - filter for dates up to this date
         return adDate <= to;
@@ -421,7 +422,7 @@ const AdDashboard = () => {
                       <div className="space-y-1">
                         {ad.publishDates.slice(0, 2).map((date, index) => (
                           <div key={index} className="text-xs text-muted-foreground">
-                            {new Date(date).toLocaleDateString()}
+                            {formatDate(date)}
                           </div>
                         ))}
                         {ad.publishDates.length > 2 && (

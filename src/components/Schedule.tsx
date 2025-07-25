@@ -26,6 +26,7 @@ import {
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { formatDate, formatDateForInput } from "@/lib/utils";
 
 const Schedule = () => {
   const { toast } = useToast();
@@ -43,10 +44,6 @@ const Schedule = () => {
   // Check if selected date is past
   const isPastDate = selectedDate ? selectedDate.getTime() < new Date().setHours(0, 0, 0, 0) : false;
 
-  // Date formatting utility
-  const formatDate = (date: string | Date) => {
-    return format(new Date(date), "dd/MM/yyyy");
-  };
 
   // Mock scheduled ads data with special instructions
   const scheduledAds = [
@@ -301,8 +298,8 @@ const Schedule = () => {
     let matchesDate = true;
     if (selectedDate) {
       const adDate = new Date(ad.publishDate);
-      const selectedDateOnly = format(selectedDate, "yyyy-MM-dd");
-      const adDateOnly = format(adDate, "yyyy-MM-dd");
+      const selectedDateOnly = formatDateForInput(selectedDate);
+      const adDateOnly = formatDateForInput(adDate);
       matchesDate = selectedDateOnly === adDateOnly;
     }
     

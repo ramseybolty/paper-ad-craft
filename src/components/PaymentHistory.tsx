@@ -30,6 +30,7 @@ interface PaymentHistoryProps {
 }
 
 import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayment }: PaymentHistoryProps) => {
   const { toast } = useToast();
@@ -43,10 +44,6 @@ const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayme
     notes: ""
   });
 
-  // Date formatting utility
-  const formatDate = (date: string | Date) => {
-    return format(new Date(date), "dd/MM/yyyy");
-  };
 
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = totalAmount - totalPaid;

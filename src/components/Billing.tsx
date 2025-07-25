@@ -30,6 +30,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import PaymentHistory from "./PaymentHistory";
 import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 const Billing = () => {
   const { toast } = useToast();
@@ -54,10 +55,6 @@ const Billing = () => {
   // Mock user role - in real implementation this would come from auth context
   const currentUserRole = "admin"; // admin, staff, accountant
 
-  // Date formatting utility
-  const formatDate = (date: string | Date) => {
-    return format(new Date(date), "dd/MM/yyyy");
-  };
   const availableAgents = [
     { name: "Raj Kumar", contact: "+91 98765 43210" },
     { name: "Priya Sharma", contact: "+91 87654 32109" },

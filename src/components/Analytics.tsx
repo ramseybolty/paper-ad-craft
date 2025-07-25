@@ -31,6 +31,7 @@ import {
   Area,
   AreaChart
 } from "recharts";
+import { formatDate } from "@/lib/utils";
 
 const Analytics = () => {
   const [timeRange, setTimeRange] = useState("30days");
@@ -534,7 +535,7 @@ const Analytics = () => {
                                 {client.type}
                               </Badge>
                               <span className="text-xs text-muted-foreground">
-                                Last: {new Date(client.lastAd).toLocaleDateString()}
+                                Last: {formatDate(client.lastAd)}
                               </span>
                             </div>
                           </div>

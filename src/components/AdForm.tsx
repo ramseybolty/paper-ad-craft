@@ -13,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 const AdForm = () => {
   const { toast } = useToast();
@@ -267,7 +267,7 @@ const AdForm = () => {
       size: formData.page === 'classifieds' 
         ? `${formData.words} words` 
         : `${formData.columns} columns × ${formData.centimeters} cm`,
-      publishDates: publishDates.map(date => date.toLocaleDateString()).join(", "),
+      publishDates: publishDates.map(date => formatDate(date)).join(", "),
       content: formData.content || "Content to be provided",
       instructions: formData.instructions || "None",
       timestamp: new Date().toLocaleString()
@@ -808,7 +808,7 @@ Please sign and return this order copy.
                   <div className="flex flex-wrap gap-2">
                     {publishDates.map((date, index) => (
                       <Badge key={index} variant="default" className="flex items-center space-x-2 pr-1">
-                        <span>{format(date, "MMM dd, yyyy")}</span>
+                        <span>{formatDate(date)}</span>
                         <Button
                           type="button"
                           variant="ghost"
