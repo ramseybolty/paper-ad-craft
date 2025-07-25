@@ -187,9 +187,11 @@ const PaymentHistory = ({ adId, invoiceNumber, totalAmount, payments, onAddPayme
                   <Label htmlFor="receipt-number">Receipt Number *</Label>
                   <Input
                     id="receipt-number"
-                    placeholder="Receipt/Bill number"
+                    placeholder="Receipt/Bill number (Required)"
                     value={newPayment.receiptNumber}
                     onChange={(e) => setNewPayment(prev => ({ ...prev, receiptNumber: e.target.value }))}
+                    className={!newPayment.receiptNumber ? "border-destructive" : ""}
+                    required
                   />
                 </div>
 
