@@ -9,14 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIcon, Users, Building, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const AdForm = () => {
   const { toast } = useToast();
-  const [publishDate, setPublishDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [publishDates, setPublishDates] = useState<Date[]>([]);
+  const [tempDate, setTempDate] = useState<Date>();
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -30,18 +30,53 @@ const AdForm = () => {
     agentContact: ""
   });
 
-  const mockClients = [
+  // Mock saved clients and agents for dropdown selection
+  const [savedClients] = useState([
     { id: 1, name: "John Smith", type: "individual", contact: "john@email.com" },
     { id: 2, name: "ABC Real Estate", type: "agency", contact: "info@abcrealty.com" },
     { id: 3, name: "Sarah Johnson", type: "individual", contact: "sarah@email.com" },
     { id: 4, name: "Prime Motors Ltd", type: "agency", contact: "sales@primemotors.com" }
-  ];
+  ]);
 
-  const mockAgents = [
+  const [savedAgents] = useState([
     { id: 1, name: "Mike Wilson", contact: "mike@newsagency.com", agency: "News Agency Pro" },
     { id: 2, name: "Lisa Chen", contact: "lisa@adpartners.com", agency: "Ad Partners" },
     { id: 3, name: "David Brown", contact: "david@mediagroup.com", agency: "Media Group" }
-  ];
+  ]);
+
+  const addPublishDate = () => {
+    if (tempDate && !publishDates.some(date => date.getTime() === tempDate.getTime())) {
+      setPublishDates([...publishDates, tempDate]);
+      setTempDate(undefined);
+    }
+  };
+
+  const removePublishDate = (dateToRemove: Date) => {
+    setPublishDates(publishDates.filter(date => date.getTime() !== dateToRemove.getTime()));
+  };
+
+  const selectSavedClient = (clientId: string) => {
+    const client = savedClients.find(c => c.id === parseInt(clientId));
+    if (client) {
+      setFormData({
+        ...formData,
+        clientName: client.name,
+        clientType: client.type,
+        contactInfo: client.contact
+      });
+    }
+  };
+
+  const selectSavedAgent = (agentId: string) => {
+    const agent = savedAgents.find(a => a.id === parseInt(agentId));
+    if (agent) {
+      setFormData({
+        ...formData,
+        agentName: agent.name,
+        agentContact: agent.contact
+      });
+    }
+  };
 
   const categories = [
     "Classified",
@@ -131,6 +166,22 @@ const AdForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="space-y-2">
+                  <Label>Select Saved Client (Optional)</Label>
+                  <Select onValueChange={selectSavedClient}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved clients" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id.toString()}>
+                          {client.name} ({client.type})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label>Client Type</Label>
                   <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})}>
                     <SelectTrigger>
@@ -144,18 +195,35 @@ const AdForm = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name</Label>
+                  <Label htmlFor="clientName">Client Name *</Label>
                   <Input
                     id="clientName"
                     placeholder="Enter client name"
                     value={formData.clientName}
                     onChange={(e) => setFormData({...formData, clientName: e.target.value})}
                     className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    required
                   />
                 </div>
               </div>
 
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Select Saved Agent (Optional)</Label>
+                  <Select onValueChange={selectSavedAgent}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose from saved agents" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedAgents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id.toString()}>
+                          {agent.name} - {agent.agency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="agentName">Agent Name (Optional)</Label>
                   <Input
@@ -181,117 +249,154 @@ const AdForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="contact">Contact Information</Label>
-              <Input
-                id="contact"
-                placeholder="Phone, email, or address"
-                value={formData.contactInfo}
-                onChange={(e) => setFormData({...formData, contactInfo: e.target.value})}
-                className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-              />
+          <div className="space-y-2">
+            <Label htmlFor="contact">Contact Information *</Label>
+            <Input
+              id="contact"
+              placeholder="Phone, email, or address"
+              value={formData.contactInfo}
+              onChange={(e) => setFormData({...formData, contactInfo: e.target.value})}
+              className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+              required
+            />
+          </div>
+
+          {/* Publication Dates - Multiple Date Selection */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Publication Dates *</Label>
+            <p className="text-sm text-muted-foreground">Select dates when the advertisement should be published in the newspaper</p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex-1">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !tempDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tempDate ? format(tempDate, "PPP") : <span>Select a publish date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={tempDate}
+                        onSelect={setTempDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button 
+                  type="button"
+                  onClick={addPublishDate}
+                  disabled={!tempDate}
+                  className="flex items-center space-x-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Date</span>
+                </Button>
+              </div>
+
+              {publishDates.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Selected Publication Dates:</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {publishDates.map((date, index) => (
+                      <Badge key={index} variant="default" className="flex items-center space-x-2 pr-1">
+                        <span>{format(date, "MMM dd, yyyy")}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 w-4 h-4 hover:bg-transparent"
+                          onClick={() => removePublishDate(date)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {publishDates.length} date{publishDates.length !== 1 ? 's' : ''} selected
+                  </p>
+                </div>
+              )}
+
+              {publishDates.length === 0 && (
+                <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+                  <p className="text-sm text-warning-foreground">
+                    ⚠️ Please select at least one publication date for your advertisement
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Date Selection */}
+          {/* Size Configuration - Now Mandatory */}
           <div className="space-y-4">
-            <Label className="text-base font-semibold">Publication Dates</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Date of Publish (DOP)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !publishDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {publishDate ? format(publishDate, "PPP") : <span>Select publish date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={publishDate}
-                      onSelect={setPublishDate}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>End Date (Optional)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : <span>Select end date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-
-          {/* Size Configuration */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Advertisement Size (Optional)</Label>
-            <p className="text-sm text-muted-foreground">Specify custom dimensions for your advertisement</p>
+            <Label className="text-base font-semibold">Advertisement Size *</Label>
+            <p className="text-sm text-muted-foreground">Specify dimensions for your advertisement (required for pricing calculation)</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="columns">Columns</Label>
+                <Label htmlFor="columns">Columns *</Label>
                 <Input
                   id="columns"
                   type="number"
-                  placeholder="Number of columns (e.g., 2)"
+                  min="1"
+                  max="6"
+                  placeholder="Number of columns (1-6)"
                   value={formData.columns}
                   onChange={(e) => setFormData({...formData, columns: e.target.value})}
                   className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="centimeters">Height (cm)</Label>
+                <Label htmlFor="centimeters">Height (cm) *</Label>
                 <Input
                   id="centimeters"
                   type="number"
-                  placeholder="Height in centimeters (e.g., 10)"
+                  min="1"
+                  placeholder="Height in centimeters"
                   value={formData.centimeters}
                   onChange={(e) => setFormData({...formData, centimeters: e.target.value})}
                   className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                  required
                 />
               </div>
             </div>
             
             {formData.columns && formData.centimeters && (
-              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                <p className="text-sm font-medium text-foreground">
-                  Size Preview: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Estimated cost will be calculated based on dimensions
+              <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Cost per date: ${(parseInt(formData.columns) * parseInt(formData.centimeters) * 0.8).toFixed(2)}
+                    </p>
+                  </div>
+                  <Badge variant="default" className="bg-success text-success-foreground">
+                    Size Set
+                  </Badge>
+                </div>
+              </div>
+            )}
+
+            {(!formData.columns || !formData.centimeters) && (
+              <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+                <p className="text-sm text-warning-foreground">
+                  ⚠️ Both columns and height are required for advertisement pricing
                 </p>
               </div>
             )}

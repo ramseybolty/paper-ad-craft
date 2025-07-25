@@ -17,12 +17,11 @@ const AdDashboard = () => {
       clientType: "individual",
       agentName: "Mike Wilson",
       agentContact: "mike@newsagency.com",
-      publishDate: "2024-01-15",
-      endDate: "2024-02-15"
+      publishDates: ["2024-01-15", "2024-01-22", "2024-01-29"]
     },
     {
       id: 2,
-      title: "Professional Web Design Services",
+      title: "Professional Web Design Services", 
       category: "Services",
       status: "pending",
       views: 0,
@@ -32,13 +31,12 @@ const AdDashboard = () => {
       clientType: "agency",
       agentName: "",
       agentContact: "",
-      publishDate: null,
-      endDate: null
+      publishDates: ["2024-02-01", "2024-02-08"]
     },
     {
       id: 3,
       title: "2019 Honda Civic - Excellent Condition",
-      category: "Automotive",
+      category: "Automotive", 
       status: "published",
       views: 156,
       columns: "4",
@@ -47,8 +45,7 @@ const AdDashboard = () => {
       clientType: "individual",
       agentName: "Lisa Chen",
       agentContact: "lisa@adpartners.com",
-      publishDate: "2024-01-12",
-      endDate: "2024-01-26"
+      publishDates: ["2024-01-12", "2024-01-19"]
     },
     {
       id: 4,
@@ -62,8 +59,7 @@ const AdDashboard = () => {
       clientType: "agency",
       agentName: "David Brown",
       agentContact: "david@mediagroup.com",
-      publishDate: "2024-01-01",
-      endDate: "2024-01-14"
+      publishDates: ["2024-01-01", "2024-01-08", "2024-01-15"]
     }
   ];
 
@@ -126,7 +122,7 @@ const AdDashboard = () => {
                   <th className="text-left p-4 font-medium text-foreground">Size</th>
                   <th className="text-left p-4 font-medium text-foreground">Views</th>
                   <th className="text-left p-4 font-medium text-foreground">Agent</th>
-                  <th className="text-left p-4 font-medium text-foreground">End Date</th>
+                  <th className="text-left p-4 font-medium text-foreground">Publication Dates</th>
                   <th className="text-right p-4 font-medium text-foreground">Actions</th>
                 </tr>
               </thead>
@@ -136,7 +132,9 @@ const AdDashboard = () => {
                     <td className="p-4">
                       <div>
                         <p className="font-medium text-foreground truncate max-w-48">{ad.title}</p>
-                        <p className="text-sm text-muted-foreground">Published: {ad.publishDate || "Not set"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {ad.publishDates.length} publication{ad.publishDates.length !== 1 ? 's' : ''}
+                        </p>
                       </div>
                     </td>
                     <td className="p-4">
@@ -180,8 +178,19 @@ const AdDashboard = () => {
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-muted-foreground">
-                      {ad.endDate || "N/A"}
+                    <td className="p-4">
+                      <div className="space-y-1">
+                        {ad.publishDates.slice(0, 2).map((date, index) => (
+                          <div key={index} className="text-xs text-muted-foreground">
+                            {new Date(date).toLocaleDateString()}
+                          </div>
+                        ))}
+                        {ad.publishDates.length > 2 && (
+                          <div className="text-xs text-primary">
+                            +{ad.publishDates.length - 2} more
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-end space-x-2">
