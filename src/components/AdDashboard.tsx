@@ -11,7 +11,8 @@ import { formatDate, formatDateForInput } from "@/lib/utils";
 import EditAdModal from "./EditAdModal";
 import DateSpecificStatusModal from "./DateSpecificStatusModal";
 import { Advertisement } from "@/types/ad";
-import { migrateAllAdsInStorage, getAdOverallStatus, getAdPublishDates, hasEditablePublications } from "@/utils/adDataMigration";
+import { getAdOverallStatus, getAdPublishDates, hasEditablePublications } from "@/utils/adDataMigration";
+import { dataService } from "@/utils/dataService";
 
 interface AdDashboardProps {
   showAllAds?: boolean;
@@ -33,7 +34,9 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
 
   // Load ads from localStorage on component mount
   useEffect(() => {
-    const migratedAds = migrateAllAdsInStorage();
+    // Clean up old data and get current ads
+    dataService.cleanupOldData();
+    const migratedAds = dataService.getAds();
     const defaultAds: Advertisement[] = [
       {
         id: 1,
@@ -159,9 +162,18 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
       }
     ];
     
-    // Merge migrated ads with default ads (prioritize saved ads)
-    const allAds = [...defaultAds, ...migratedAds];
+    // Combine with user ads
+    const allAds = [...defaultAds, ...migratedAds.filter((ad: Advertisement) => !defaultAds.some(da => da.id === ad.id))];
+    
     setAds(allAds);
+
+    // Subscribe to data changes
+    const unsubscribe = dataService.subscribe('ads', (updatedAds: Advertisement[]) => {
+      const newAllAds = [...defaultAds, ...updatedAds.filter((ad: Advertisement) => !defaultAds.some(da => da.id === ad.id))];
+      setAds(newAllAds);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Extract unique categories and agents for filters
@@ -268,13 +280,7 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   };
 
   const handleDeleteAd = (adId: number) => {
-    console.log('Deleting ad:', adId);
-    const updatedAds = ads.filter(ad => ad.id !== adId);
-    setAds(updatedAds);
-    
-    // Update localStorage
-    const savedAds = updatedAds.filter(ad => !ad.id || ad.id > 1000); // Only save user-created ads
-    localStorage.setItem('userAds', JSON.stringify(savedAds));
+    dataService.deleteAd(adId);
     
     toast({
       title: "Advertisement Deleted",
@@ -288,15 +294,7 @@ const AdDashboard = ({ showAllAds = false }: AdDashboardProps) => {
   };
 
   const handleSaveEditedAd = (updatedAd: any) => {
-    const updatedAds = ads.map(ad => 
-      ad.id === updatedAd.id ? updatedAd : ad
-    );
-    setAds(updatedAds);
-    
-    // Update localStorage
-    const savedAds = updatedAds.filter(ad => !ad.id || ad.id > 1000); // Only save user-created ads
-    localStorage.setItem('userAds', JSON.stringify(savedAds));
-    localStorage.setItem('newsprint-ads', JSON.stringify(updatedAds));
+    dataService.updateAd(updatedAd.id, updatedAd);
     
     setEditingAd(null);
     setIsEditModalOpen(false);

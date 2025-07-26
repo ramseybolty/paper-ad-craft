@@ -28,7 +28,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateForInput } from "@/lib/utils";
 import { Advertisement } from "@/types/ad";
-import { migrateAllAdsInStorage } from "@/utils/adDataMigration";
+import { dataService } from "@/utils/dataService";
 
 const Schedule = () => {
   const { toast } = useToast();
@@ -49,8 +49,15 @@ const Schedule = () => {
 
   // Load ads from localStorage on component mount
   useEffect(() => {
-    const migratedAds = migrateAllAdsInStorage();
-    setAds(migratedAds);
+    const currentAds = dataService.getAds();
+    setAds(currentAds);
+
+    // Subscribe to data changes
+    const unsubscribe = dataService.subscribe('ads', (updatedAds: Advertisement[]) => {
+      setAds(updatedAds);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Convert Advertisement data to schedule format and merge with mock data
@@ -329,9 +336,8 @@ const Schedule = () => {
       };
     });
 
-    // Save to localStorage
-    localStorage.setItem('newsprint-ads', JSON.stringify(updatedAds));
-    setAds(updatedAds);
+    // Save using data service
+    dataService.saveAds(updatedAds);
 
     toast({
       title: "Bulk Action Completed",

@@ -15,6 +15,7 @@ import { Calendar as CalendarIcon, Clock, DollarSign, FileText, Image as ImageIc
 import { useToast } from "@/hooks/use-toast";
 import { cn, formatDate } from "@/lib/utils";
 import { Advertisement, AdPublication } from "@/types/ad";
+import { dataService } from "@/utils/dataService";
 
 const AdForm = () => {
   const { toast } = useToast();
@@ -414,10 +415,8 @@ Please sign and return this order copy.
     newAd.gst = newAd.baseAmount * 0.05;
     newAd.totalAmount = newAd.baseAmount + newAd.gst;
 
-    // Save to localStorage for cross-component access
-    const existingAds = JSON.parse(localStorage.getItem('newsprint-ads') || '[]');
-    existingAds.push(newAd);
-    localStorage.setItem('newsprint-ads', JSON.stringify(existingAds));
+    // Save using data service
+    dataService.addAd(newAd);
 
     // Save new client/agent data to databases before submission
     if (!isClientFromDropdown) {

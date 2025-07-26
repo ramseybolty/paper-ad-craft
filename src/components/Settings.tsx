@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import UserManagement from "./UserManagement";
 
 const Settings = () => {
   const { toast } = useToast();
@@ -350,98 +351,9 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* User Management Settings */}
+        {/* User Management */}
         <TabsContent value="users" className="space-y-6">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span>User Management</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Allow Self Registration</Label>
-                      <p className="text-sm text-muted-foreground">Users can create accounts themselves</p>
-                    </div>
-                    <Switch
-                      checked={userSettings.allowSelfRegistration}
-                      onCheckedChange={(checked) => setUserSettings({...userSettings, allowSelfRegistration: checked})}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Require Email Verification</Label>
-                      <p className="text-sm text-muted-foreground">Users must verify email before access</p>
-                    </div>
-                    <Switch
-                      checked={userSettings.requireEmailVerification}
-                      onCheckedChange={(checked) => setUserSettings({...userSettings, requireEmailVerification: checked})}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Two-Factor Authentication</Label>
-                      <p className="text-sm text-muted-foreground">Require 2FA for admin users</p>
-                    </div>
-                    <Switch
-                      checked={userSettings.twoFactorAuth}
-                      onCheckedChange={(checked) => setUserSettings({...userSettings, twoFactorAuth: checked})}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="password-length">Minimum Password Length</Label>
-                    <Input
-                      id="password-length"
-                      type="number"
-                      value={userSettings.passwordMinLength}
-                      onChange={(e) => setUserSettings({...userSettings, passwordMinLength: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="session-timeout">Session Timeout (hours)</Label>
-                    <Input
-                      id="session-timeout"
-                      type="number"
-                      value={userSettings.sessionTimeout}
-                      onChange={(e) => setUserSettings({...userSettings, sessionTimeout: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="default-role">Default User Role</Label>
-                    <Select value={userSettings.defaultUserRole} onValueChange={(value) => setUserSettings({...userSettings, defaultUserRole: value})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="accountant">Accountant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <Button variant="outline" onClick={() => handleResetSettings("User Management")}>
-                  Reset
-                </Button>
-                <Button onClick={() => handleSaveSettings("User Management")}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save User Settings
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <UserManagement />
         </TabsContent>
 
         {/* Ad Management Settings */}
