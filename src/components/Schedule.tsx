@@ -308,8 +308,31 @@ const Schedule = () => {
       return;
     }
 
-    // In real implementation, this would update the backend
-    console.log(`Publishing ${selectedAds.length} ads`);
+    // Update status for real ads (those with string IDs like "1-2024-02-16")
+    const updatedAds = ads.map(ad => {
+      const updatedPublications = ad.publications.map(pub => {
+        const adKey = `${ad.id}-${pub.date}`;
+        if (selectedAds.includes(adKey)) {
+          return {
+            ...pub,
+            status: 'published' as const,
+            publishedAt: new Date().toISOString()
+          };
+        }
+        return pub;
+      });
+      
+      return {
+        ...ad,
+        publications: updatedPublications,
+        updatedAt: new Date().toISOString()
+      };
+    });
+
+    // Save to localStorage
+    localStorage.setItem('newsprint-ads', JSON.stringify(updatedAds));
+    setAds(updatedAds);
+
     toast({
       title: "Bulk Action Completed",
       description: `${selectedAds.length} ads marked as published`,
