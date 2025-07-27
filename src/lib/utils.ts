@@ -7,14 +7,29 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Centralized date formatting utilities
-export function formatDate(date: string | Date): string {
-  return format(new Date(date), "dd/MM/yyyy")
+export function formatDate(date: string | Date | undefined | null): string {
+  if (!date) return "N/A";
+  
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return "Invalid Date";
+  
+  return format(dateObj, "dd/MM/yyyy");
 }
 
-export function formatDateLong(date: string | Date): string {
-  return format(new Date(date), "dd MMM yyyy")
+export function formatDateLong(date: string | Date | undefined | null): string {
+  if (!date) return "N/A";
+  
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return "Invalid Date";
+  
+  return format(dateObj, "dd MMM yyyy");
 }
 
-export function formatDateForInput(date: string | Date): string {
-  return format(new Date(date), "yyyy-MM-dd")
+export function formatDateForInput(date: string | Date | undefined | null): string {
+  if (!date) return "";
+  
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return "";
+  
+  return format(dateObj, "yyyy-MM-dd");
 }

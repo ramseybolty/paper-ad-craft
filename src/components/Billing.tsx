@@ -86,25 +86,31 @@ const Billing = () => {
   ];
 
   // Convert real ads to billing format and merge with mock data
-  const convertToBillingData = (ad: any) => ({
-    id: ad.id,
-    title: ad.title,
-    clientName: ad.clientName || "Unknown Client",
-    clientType: "individual",
-    agentName: "System Agent",
-    page: ad.page,
-    size: ad.size,
-    publishDates: ad.publishDates || [ad.startDate],
-    baseAmount: parseFloat(ad.totalCost || 0),
-    discount: 0,
-    subtotal: parseFloat(ad.totalCost || 0),
-    gst: parseFloat(ad.totalCost || 0) * 0.05,
-    totalAmount: parseFloat(ad.totalCost || 0) * 1.05,
-    paymentStatus: ad.paymentStatus || "pending",
-    invoiceNumber: `INV-${ad.id}`,
-    dueDate: ad.startDate,
-    payments: ad.payments || []
-  });
+  const convertToBillingData = (ad: any) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const startDate = ad.startDate || currentDate;
+    const totalCost = parseFloat(ad.totalCost || 0);
+    
+    return {
+      id: ad.id,
+      title: ad.title,
+      clientName: ad.clientName || "Unknown Client",
+      clientType: "individual",
+      agentName: "System Agent",
+      page: ad.page,
+      size: ad.size,
+      publishDates: ad.publishDates || [startDate],
+      baseAmount: totalCost,
+      discount: 0,
+      subtotal: totalCost,
+      gst: totalCost * 0.05,
+      totalAmount: totalCost * 1.05,
+      paymentStatus: ad.paymentStatus || "pending",
+      invoiceNumber: `INV-${ad.id}`,
+      dueDate: startDate,
+      payments: ad.payments || []
+    };
+  };
 
   // Mock ads with billing information and enhanced payment structure
   const mockBillingData = [
