@@ -14,23 +14,39 @@ import {
 interface SidebarProps {
   activeView: string;
   onViewChange: (view: string) => void;
+  userRole?: string;
 }
 
-const Sidebar = ({ activeView, onViewChange }: SidebarProps) => {
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "create-ad", label: "Create Ad", icon: Plus },
-    { id: "my-ads", label: "My Ads", icon: FileText },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "billing", label: "Billing", icon: CreditCard },
-    { id: "schedule", label: "Schedule", icon: Calendar },
-  ];
+const Sidebar = ({ activeView, onViewChange, userRole = "admin" }: SidebarProps) => {
+  // Role-based menu items
+  const getMenuItems = () => {
+    const baseItems = [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "manager", "staff", "accountant"] },
+    ];
 
-  const adminItems = [
-    { id: "all-ads", label: "All Ads", icon: FileText },
-    { id: "users", label: "Users", icon: Users },
-    { id: "settings", label: "Settings", icon: Settings },
-  ];
+    const roleBasedItems = [
+      { id: "create-ad", label: "Create Ad", icon: Plus, roles: ["admin", "manager", "staff"] },
+      { id: "my-ads", label: "My Ads", icon: FileText, roles: ["admin", "manager", "staff", "accountant"] },
+      { id: "analytics", label: "Analytics", icon: BarChart3, roles: ["admin", "manager"] },
+      { id: "billing", label: "Billing", icon: CreditCard, roles: ["admin", "manager", "accountant"] },
+      { id: "schedule", label: "Schedule", icon: Calendar, roles: ["admin", "manager", "staff"] },
+    ];
+
+    return [...baseItems, ...roleBasedItems.filter(item => item.roles.includes(userRole))];
+  };
+
+  const getAdminItems = () => {
+    const adminItems = [
+      { id: "all-ads", label: "All Ads", icon: FileText, roles: ["admin", "manager"] },
+      { id: "users", label: "Users", icon: Users, roles: ["admin"] },
+      { id: "settings", label: "Settings", icon: Settings, roles: ["admin", "manager"] },
+    ];
+
+    return adminItems.filter(item => item.roles.includes(userRole));
+  };
+
+  const menuItems = getMenuItems();
+  const adminItems = getAdminItems();
 
   return (
     <div className="w-64 h-screen bg-card border-r shadow-sm">

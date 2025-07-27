@@ -26,11 +26,12 @@ import {
   Users,
   User
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import PaymentHistory from "./PaymentHistory";
 import { format } from "date-fns";
 import { formatDate } from "@/lib/utils";
+import { dataService } from "@/utils/dataService";
 
 const Billing = () => {
   const { toast } = useToast();
@@ -51,9 +52,22 @@ const Billing = () => {
   const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [receiptNumber, setReceiptNumber] = useState("");
   const [paymentHistoryAd, setPaymentHistoryAd] = useState<any>(null);
+  const [realAds, setRealAds] = useState<any[]>([]);
   
   // Mock user role - in real implementation this would come from auth context
-  const currentUserRole = "admin"; // admin, staff, accountant
+  const currentUserRole = "admin"; // admin, staff, accountant, manager
+  
+  // Load real ads from data service
+  useEffect(() => {
+    const ads = dataService.getAds();
+    setRealAds(ads);
+    
+    const unsubscribe = dataService.subscribe('ads', (updatedAds) => {
+      setRealAds(updatedAds);
+    });
+    
+    return unsubscribe;
+  }, []);
 
   const availableAgents = [
     { name: "Raj Kumar", contact: "+91 98765 43210" },
@@ -71,8 +85,29 @@ const Billing = () => {
     { name: "Maria Garcia", contact: "+91 54321 55555", type: "individual" }
   ];
 
+  // Convert real ads to billing format and merge with mock data
+  const convertToBillingData = (ad: any) => ({
+    id: ad.id,
+    title: ad.title,
+    clientName: ad.clientName || "Unknown Client",
+    clientType: "individual",
+    agentName: "System Agent",
+    page: ad.page,
+    size: ad.size,
+    publishDates: ad.publishDates || [ad.startDate],
+    baseAmount: parseFloat(ad.totalCost || 0),
+    discount: 0,
+    subtotal: parseFloat(ad.totalCost || 0),
+    gst: parseFloat(ad.totalCost || 0) * 0.05,
+    totalAmount: parseFloat(ad.totalCost || 0) * 1.05,
+    paymentStatus: ad.paymentStatus || "pending",
+    invoiceNumber: `INV-${ad.id}`,
+    dueDate: ad.startDate,
+    payments: ad.payments || []
+  });
+
   // Mock ads with billing information and enhanced payment structure
-  const adBillingData = [
+  const mockBillingData = [
     {
       id: 1,
       title: "Beautiful Downtown Apartment for Rent",
@@ -212,6 +247,12 @@ const Billing = () => {
         }
       ]
     }
+  ];
+
+  // Combine real ads and mock data
+  const adBillingData = [
+    ...realAds.map(convertToBillingData),
+    ...mockBillingData
   ];
 
   // Filter logic with enhanced filters
