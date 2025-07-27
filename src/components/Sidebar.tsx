@@ -39,6 +39,7 @@ const Sidebar = ({ activeView, onViewChange, userRole = "admin" }: SidebarProps)
     const adminItems = [
       { id: "all-ads", label: "All Ads", icon: FileText, roles: ["admin", "manager"] },
       { id: "users", label: "Users", icon: Users, roles: ["admin"] },
+      { id: "client-agent", label: "Client & Agent Data", icon: Users, roles: ["admin", "manager"] },
       { id: "settings", label: "Settings", icon: Settings, roles: ["admin", "manager"] },
     ];
 

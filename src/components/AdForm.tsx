@@ -55,43 +55,36 @@ const AdForm = () => {
     clientName: "",
     clientType: "individual",
     clientContact: "",
+    clientGst: "", // New GST field for client
     agentName: "",
-    agentContact: ""
+    agentContact: "",
+    agentGst: "" // New GST field for agent
   });
 
-  // Load page layouts from settings on component mount
+  // Load page layouts, clients, and agents from data service on component mount
   useEffect(() => {
-    const savedLayouts = localStorage.getItem('newsprint-page-layouts');
-    if (savedLayouts) {
-      const layouts = JSON.parse(savedLayouts);
-      setAvailablePageLayouts(layouts);
-    }
+    const layouts = dataService.getPageLayouts();
+    setAvailablePageLayouts(layouts);
+    
+    const clients = dataService.getClients();
+    setSavedClients(clients);
+    
+    const agents = dataService.getAgents();
+    setSavedAgents(agents);
+
+    // Subscribe to updates
+    const unsubscribeClients = dataService.subscribe('clients', setSavedClients);
+    const unsubscribeAgents = dataService.subscribe('agents', setSavedAgents);
+
+    return () => {
+      unsubscribeClients();
+      unsubscribeAgents();
+    };
   }, []);
 
-  // Saved clients and agents - using state to allow dynamic updates
-  const [savedClients, setSavedClients] = useState([
-    { id: 1, name: "John Smith", type: "individual", contact: "+1-555-0101", email: "john@email.com" },
-    { id: 2, name: "ABC Real Estate", type: "agency", contact: "+1-555-0102", email: "info@abcrealty.com" },
-    { id: 3, name: "Sarah Johnson", type: "individual", contact: "+1-555-0103", email: "sarah@email.com" },
-    { id: 4, name: "Prime Motors Ltd", type: "agency", contact: "+1-555-0104", email: "sales@primemotors.com" },
-    { id: 5, name: "John Miller", type: "individual", contact: "+1-555-0105", email: "jmiller@email.com" },
-    { id: 6, name: "Tech Solutions Inc", type: "agency", contact: "+1-555-0106", email: "contact@techsolutions.com" },
-    { id: 7, name: "Sarah Williams", type: "individual", contact: "+1-555-0107", email: "swilliams@email.com" },
-    { id: 8, name: "Global Marketing Agency", type: "agency", contact: "+1-555-0108", email: "hello@globalmarketing.com" },
-    { id: 9, name: "John Davis", type: "individual", contact: "+1-555-0109", email: "jdavis@email.com" },
-    { id: 10, name: "Metro Properties", type: "agency", contact: "+1-555-0110", email: "info@metroproperties.com" }
-  ]);
-
-  const [savedAgents, setSavedAgents] = useState([
-    { id: 1, name: "Mike Wilson", contact: "+1-555-0201", email: "mike@newsagency.com", agency: "News Agency Pro" },
-    { id: 2, name: "Lisa Chen", contact: "+1-555-0202", email: "lisa@adpartners.com", agency: "Ad Partners" },
-    { id: 3, name: "David Brown", contact: "+1-555-0203", email: "david@mediagroup.com", agency: "Media Group" },
-    { id: 4, name: "Emily Wilson", contact: "+1-555-0204", email: "emily@newsagency.com", agency: "News Agency Pro" },
-    { id: 5, name: "Michael Torres", contact: "+1-555-0205", email: "mtorres@adpartners.com", agency: "Ad Partners" },
-    { id: 6, name: "Jennifer Lee", contact: "+1-555-0206", email: "jlee@creativemedia.com", agency: "Creative Media" },
-    { id: 7, name: "Robert Smith", contact: "+1-555-0207", email: "rsmith@newscentral.com", agency: "News Central" },
-    { id: 8, name: "Amanda Johnson", contact: "+1-555-0208", email: "ajohnson@mediaplus.com", agency: "Media Plus" }
-  ]);
+  // Load clients and agents from data service
+  const [savedClients, setSavedClients] = useState<any[]>([]);
+  const [savedAgents, setSavedAgents] = useState<any[]>([]);
 
   const addPublishDate = () => {
     if (tempDate && !publishDates.some(date => date.getTime() === tempDate.getTime())) {
@@ -183,8 +176,10 @@ const AdForm = () => {
       clientName: "",
       clientType: "individual",
       clientContact: "",
+      clientGst: "",
       agentName: "",
-      agentContact: ""
+      agentContact: "",
+      agentGst: ""
     });
     
     // Reset dates to empty (no default selection)
@@ -234,6 +229,15 @@ const AdForm = () => {
     } else {
       if (!formData.columns || !formData.centimeters) {
         errors.push("Both columns and height are required");
+      } else {
+        const columns = parseInt(formData.columns);
+        const height = parseInt(formData.centimeters);
+        if (columns > 16) {
+          errors.push("Maximum 16 columns allowed");
+        }
+        if (height > 50) {
+          errors.push("Maximum 50cm height allowed");
+        }
       }
     }
     
@@ -646,6 +650,21 @@ Please sign and return this order copy.
                     </p>
                   )}
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clientGst">Client GST Number (Optional)</Label>
+                  <Input
+                    id="clientGst"
+                    placeholder="Enter GST number (e.g., 27ABCDE1234F1Z5)"
+                    value={formData.clientGst}
+                    onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    maxLength={15}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Optional - Required only for business clients for tax purposes
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -750,6 +769,21 @@ Please sign and return this order copy.
                       ℹ️ Contact auto-filled from saved agent. Use "Clear & Edit Manually" to modify.
                     </p>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="agentGst">Agent GST Number (Optional)</Label>
+                  <Input
+                    id="agentGst"
+                    placeholder="Enter agent GST number (e.g., 27ABCDE1234F1Z5)"
+                    value={formData.agentGst}
+                    onChange={(e) => setFormData({...formData, agentGst: e.target.value})}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    maxLength={15}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Optional - Agent GST information for business transactions
+                  </p>
                 </div>
               </div>
             </div>
@@ -912,8 +946,8 @@ Please sign and return this order copy.
                         id="columns"
                         type="number"
                         min="1"
-                        max="6"
-                        placeholder="Number of columns (1-6)"
+                        max="16"
+                        placeholder="Number of columns (1-16)"
                         value={formData.columns}
                         onChange={(e) => setFormData({...formData, columns: e.target.value})}
                         className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
@@ -927,7 +961,8 @@ Please sign and return this order copy.
                         id="centimeters"
                         type="number"
                         min="1"
-                        placeholder="Height in centimeters"
+                        max="50"
+                        placeholder="Height in centimeters (max 50cm)"
                         value={formData.centimeters}
                         onChange={(e) => setFormData({...formData, centimeters: e.target.value})}
                         className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
