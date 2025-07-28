@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Edit, Plus, User, Building } from "lucide-react";
+import { Trash2, Edit, Plus, User, Building, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { dataService } from "@/utils/dataService";
 
@@ -20,6 +20,8 @@ const ClientAgentManagement = () => {
   const [editingAgent, setEditingAgent] = useState<any>(null);
   const [showClientDialog, setShowClientDialog] = useState(false);
   const [showAgentDialog, setShowAgentDialog] = useState(false);
+  const [clientSearchTerm, setClientSearchTerm] = useState("");
+  const [agentSearchTerm, setAgentSearchTerm] = useState("");
 
   const [clientForm, setClientForm] = useState({
     name: "",
@@ -174,6 +176,17 @@ const ClientAgentManagement = () => {
     });
   };
 
+  // Filter functions
+  const filteredClients = clients.filter(client => 
+    client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+    client.contact.toLowerCase().includes(clientSearchTerm.toLowerCase())
+  );
+
+  const filteredAgents = agents.filter(agent => 
+    agent.name.toLowerCase().includes(agentSearchTerm.toLowerCase()) ||
+    agent.contact.toLowerCase().includes(agentSearchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -273,6 +286,19 @@ const ClientAgentManagement = () => {
             </Dialog>
           </div>
 
+          {/* Client Search */}
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search clients by name or phone..."
+                value={clientSearchTerm}
+                onChange={(e) => setClientSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -287,7 +313,7 @@ const ClientAgentManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clients.map((client) => (
+                  {filteredClients.map((client) => (
                     <TableRow key={client.id}>
                       <TableCell className="font-medium">{client.name}</TableCell>
                       <TableCell>
@@ -409,6 +435,19 @@ const ClientAgentManagement = () => {
             </Dialog>
           </div>
 
+          {/* Agent Search */}
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search agents by name or phone..."
+                value={agentSearchTerm}
+                onChange={(e) => setAgentSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -423,7 +462,7 @@ const ClientAgentManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {agents.map((agent) => (
+                  {filteredAgents.map((agent) => (
                     <TableRow key={agent.id}>
                       <TableCell className="font-medium">{agent.name}</TableCell>
                       <TableCell>{agent.contact}</TableCell>

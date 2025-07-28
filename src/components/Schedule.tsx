@@ -258,22 +258,29 @@ const Schedule = () => {
 
   // Add real ads from database
   const realAds = ads.flatMap(ad => 
-    ad.publications.map(pub => ({
-      id: `${ad.id}-${pub.date}`,
-      title: ad.title,
-      clientName: ad.clientName,
-      agentName: ad.agentName || "No Agent",
-      page: ad.page,
-      size: ad.page === "classifieds" ? `${ad.words} words` : `${ad.columns}x${ad.centimeters}`,
-      publishDate: pub.date,
-      publishTime: "08:00",
-      status: pub.status,
-      category: ad.category.toLowerCase().replace(/\s+/g, "-"),
-      priority: "medium",
-      notes: ad.instructions || "",
-      specialInstructions: ad.instructions || "",
-      adContent: `${ad.title} - ${ad.clientName}`
-    }))
+    ad.publications.map(pub => {
+      // Calculate the next day of the scheduled date (DOP + 1)
+      const dopDate = new Date(pub.date);
+      const nextDay = new Date(dopDate);
+      nextDay.setDate(dopDate.getDate() + 1);
+      
+      return {
+        id: `${ad.id}-${pub.date}`,
+        title: ad.title,
+        clientName: ad.clientName,
+        agentName: ad.agentName || "No Agent",
+        page: ad.page,
+        size: ad.page === "classifieds" ? `${ad.words} words` : `${ad.columns}x${ad.centimeters}`,
+        publishDate: nextDay.toISOString().split('T')[0], // Show next day of DOP
+        publishTime: "08:00",
+        status: pub.status,
+        category: ad.category.toLowerCase().replace(/\s+/g, "-"),
+        priority: "medium",
+        notes: ad.instructions || "",
+        specialInstructions: ad.instructions || "",
+        adContent: `${ad.title} - ${ad.clientName}`
+      };
+    })
   );
 
   // Combine mock and real ads
