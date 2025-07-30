@@ -335,49 +335,40 @@ Please sign and return this order copy.
       client => client.contact === formData.clientContact.trim()
     );
     
-    if (!existingClient && formData.clientName.trim() && formData.clientContact.trim()) {
+    if (existingClient) {
+      toast({
+        title: "Client Already Exists",
+        description: `A client with phone number ${formData.clientContact} already exists in the database.`,
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (formData.clientName.trim() && formData.clientContact.trim()) {
       const newClient = {
         id: Math.max(...savedClients.map(c => c.id)) + 1,
         name: formData.clientName.trim(),
         type: formData.clientType,
         contact: formData.clientContact.trim(),
-        email: formData.clientContact.includes('@') ? formData.clientContact.trim() : `${formData.clientName.toLowerCase().replace(/\s+/g, '.')}@email.com`
+        email: formData.clientContact.includes('@') ? formData.clientContact.trim() : `${formData.clientName.toLowerCase().replace(/\s+/g, '.')}@email.com`,
+        gstNumber: formData.clientGst || "",
+        address: ""
       };
       
-      setSavedClients(prev => [...prev, newClient]);
+      const updatedClients = [...savedClients, newClient];
+      setSavedClients(updatedClients);
+      dataService.saveClients(updatedClients);
       
       toast({
         title: "New Client Added",
         description: `${formData.clientName} has been saved to the client database for future use.`,
       });
+      return true;
     }
+    return false;
   };
 
-  const saveNewAgentToDatabase = () => {
-    // Check if agent contact already exists (names can be duplicate, but contact must be unique)
-    if (!formData.agentName.trim() || !formData.agentContact.trim()) return;
-    
-    const existingAgent = savedAgents.find(
-      agent => agent.contact === formData.agentContact.trim()
-    );
-    
-    if (!existingAgent) {
-      const newAgent = {
-        id: Math.max(...savedAgents.map(a => a.id)) + 1,
-        name: formData.agentName.trim(),
-        contact: formData.agentContact.trim(),
-        email: formData.agentContact.includes('@') ? formData.agentContact.trim() : `${formData.agentName.toLowerCase().replace(/\s+/g, '.')}@agency.com`,
-        agency: "Independent Agent" // Default agency name
-      };
-      
-      setSavedAgents(prev => [...prev, newAgent]);
-      
-      toast({
-        title: "New Agent Added",
-        description: `${formData.agentName} has been saved to the agent database for future use.`,
-      });
-    }
-  };
+  // Removed agent creation from create ad page - only available through administration
 
   const confirmSubmission = () => {
     // Create publications array from selected dates
@@ -422,13 +413,13 @@ Please sign and return this order copy.
     // Save using data service
     dataService.addAd(newAd);
 
-    // Save new client/agent data to databases before submission
+    // Save new client data to database before submission
     if (!isClientFromDropdown) {
-      saveNewClientToDatabase();
-    }
-    
-    if (!isAgentFromDropdown && formData.agentName.trim()) {
-      saveNewAgentToDatabase();
+      const clientSaved = saveNewClientToDatabase();
+      if (!clientSaved) {
+        setShowConfirmDialog(false);
+        return;
+      }
     }
     
     toast({
