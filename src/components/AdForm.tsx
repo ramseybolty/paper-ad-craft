@@ -587,74 +587,144 @@ Please sign and return this order copy.
                     </PopoverContent>
                   </Popover>
 
-                <div className="space-y-2">
-                  <Label>Client Type *</Label>
-                  <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">Individual</SelectItem>
-                      <SelectItem value="agency">Agency/Business</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Client Information - More Compact Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Client Type *</Label>
+                    <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select client type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="individual">Individual</SelectItem>
+                        <SelectItem value="agency">Agency/Business</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="clientGst">Client GST Number (Optional)</Label>
+                    <Input
+                      id="clientGst"
+                      placeholder="Enter GST number"
+                      value={formData.clientGst}
+                      onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                      maxLength={15}
+                    />
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name *</Label>
-                  <Input
-                    id="clientName"
-                    placeholder="Enter client name"
-                    value={formData.clientName}
-                    onChange={(e) => setFormData({...formData, clientName: e.target.value})}
-                    className={cn(
-                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
-                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="clientName">Client Name *</Label>
+                    <Input
+                      id="clientName"
+                      placeholder="Enter client name"
+                      value={formData.clientName}
+                      onChange={(e) => setFormData({...formData, clientName: e.target.value})}
+                      className={cn(
+                        "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                        isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                      )}
+                      disabled={isClientFromDropdown}
+                      required
+                    />
+                    {isClientFromDropdown && (
+                      <p className="text-xs text-muted-foreground">
+                        ℹ️ Client selected from saved list. Use "Clear & Edit Manually" to modify.
+                      </p>
                     )}
-                    disabled={isClientFromDropdown}
-                    required
-                  />
-                  {isClientFromDropdown && (
-                    <p className="text-xs text-muted-foreground">
-                      ℹ️ Client selected from saved list. Use "Clear & Edit Manually" to modify.
-                    </p>
-                  )}
-                </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="clientContact">Client Contact *</Label>
-                  <Input
-                    id="clientContact"
-                    placeholder="Client phone/email"
-                    value={formData.clientContact}
-                    onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
-                    className={cn(
-                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
-                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                  <div className="space-y-2">
+                    <Label htmlFor="clientContact">Client Contact *</Label>
+                    <Input
+                      id="clientContact"
+                      placeholder="Client phone/email"
+                      value={formData.clientContact}
+                      onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
+                      className={cn(
+                        "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                        isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                      )}
+                      disabled={isClientFromDropdown}
+                      required
+                    />
+                    {isClientFromDropdown && (
+                      <p className="text-xs text-muted-foreground">
+                        ℹ️ Contact auto-filled from saved client. Use "Clear & Edit Manually" to modify.
+                      </p>
                     )}
-                    disabled={isClientFromDropdown}
-                    required
-                  />
-                  {isClientFromDropdown && (
-                    <p className="text-xs text-muted-foreground">
-                      ℹ️ Contact auto-filled from saved client. Use "Clear & Edit Manually" to modify.
-                    </p>
-                  )}
+                  </div>
                 </div>
+              </div>
 
+              {/* Agent Information Section */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold text-muted-foreground">Agent Information (Optional)</Label>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="clientGst">Client GST Number (Optional)</Label>
-                  <Input
-                    id="clientGst"
-                    placeholder="Enter GST number (e.g., 27ABCDE1234F1Z5)"
-                    value={formData.clientGst}
-                    onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                    maxLength={15}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Optional - Required only for business clients for tax purposes
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Label>Search & Select Agent (Optional)</Label>
+                    {isAgentFromDropdown && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAgentSelection}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Clear & Edit Manually
+                      </Button>
+                    )}
+                  </div>
+                  <Popover open={agentSearchOpen} onOpenChange={setAgentSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={agentSearchOpen}
+                        className="w-full justify-between text-left font-normal"
+                        disabled={isAgentFromDropdown}
+                      >
+                        <span className="truncate">
+                          {formData.agentName || "Search agents..."}
+                        </span>
+                        <Building className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-card border shadow-md z-50" align="start">
+                      <Command className="bg-card">
+                        <CommandInput placeholder="Search agents by name, contact, or agency..." />
+                        <CommandList className="bg-card">
+                          <CommandEmpty>No agents found.</CommandEmpty>
+                          <CommandGroup heading="Saved Agents" className="bg-card">
+                            {savedAgents.map((agent) => (
+                              <CommandItem
+                                key={agent.id}
+                                value={`${agent.name} ${agent.contact} ${agent.email} ${agent.agency}`}
+                                onSelect={() => selectSavedAgent(agent.id.toString())}
+                                className="cursor-pointer hover:bg-muted"
+                              >
+                                <div className="flex flex-col w-full">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">{agent.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {agent.agency}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    📞 {agent.contact} • ✉️ {agent.email}
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
