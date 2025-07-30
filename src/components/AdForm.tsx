@@ -587,76 +587,74 @@ Please sign and return this order copy.
                     </PopoverContent>
                   </Popover>
 
-                {/* Client Information - More Compact Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Client Type *</Label>
-                    <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select client type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="individual">Individual</SelectItem>
-                        <SelectItem value="agency">Agency/Business</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="clientGst">Client GST Number (Optional)</Label>
-                    <Input
-                      id="clientGst"
-                      placeholder="Enter GST number"
-                      value={formData.clientGst}
-                      onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
-                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                      maxLength={15}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Client Type *</Label>
+                  <Select value={formData.clientType} onValueChange={(value) => setFormData({...formData, clientType: value})} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select client type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="individual">Individual</SelectItem>
+                      <SelectItem value="agency">Agency/Business</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="clientName">Client Name *</Label>
-                    <Input
-                      id="clientName"
-                      placeholder="Enter client name"
-                      value={formData.clientName}
-                      onChange={(e) => setFormData({...formData, clientName: e.target.value})}
-                      className={cn(
-                        "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
-                        isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
-                      )}
-                      disabled={isClientFromDropdown}
-                      required
-                    />
-                    {isClientFromDropdown && (
-                      <p className="text-xs text-muted-foreground">
-                        ℹ️ Client selected from saved list. Use "Clear & Edit Manually" to modify.
-                      </p>
+                <div className="space-y-2">
+                  <Label htmlFor="clientName">Client Name *</Label>
+                  <Input
+                    id="clientName"
+                    placeholder="Enter client name"
+                    value={formData.clientName}
+                    onChange={(e) => setFormData({...formData, clientName: e.target.value})}
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
                     )}
-                  </div>
+                    disabled={isClientFromDropdown}
+                    required
+                  />
+                  {isClientFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Client selected from saved list. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="clientContact">Client Contact *</Label>
-                    <Input
-                      id="clientContact"
-                      placeholder="Client phone/email"
-                      value={formData.clientContact}
-                      onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
-                      className={cn(
-                        "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
-                        isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
-                      )}
-                      disabled={isClientFromDropdown}
-                      required
-                    />
-                    {isClientFromDropdown && (
-                      <p className="text-xs text-muted-foreground">
-                        ℹ️ Contact auto-filled from saved client. Use "Clear & Edit Manually" to modify.
-                      </p>
+                <div className="space-y-2">
+                  <Label htmlFor="clientContact">Client Contact *</Label>
+                  <Input
+                    id="clientContact"
+                    placeholder="Client phone/email"
+                    value={formData.clientContact}
+                    onChange={(e) => setFormData({...formData, clientContact: e.target.value})}
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
                     )}
-                  </div>
+                    disabled={isClientFromDropdown}
+                    required
+                  />
+                  {isClientFromDropdown && (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ Contact auto-filled from saved client. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clientGst">Client GST Number (Optional)</Label>
+                  <Input
+                    id="clientGst"
+                    placeholder="Enter GST number (e.g., 27ABCDE1234F1Z5)"
+                    value={formData.clientGst}
+                    onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    maxLength={15}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Optional - Required only for business clients for tax purposes
+                  </p>
                 </div>
               </div>
 
