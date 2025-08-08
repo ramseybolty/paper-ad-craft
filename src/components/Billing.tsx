@@ -51,6 +51,7 @@ const Billing = () => {
   const [paymentUpdateAd, setPaymentUpdateAd] = useState<any>(null);
   const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [receiptNumber, setReceiptNumber] = useState("");
+  const [partialAmount, setPartialAmount] = useState(0);
   const [paymentHistoryAd, setPaymentHistoryAd] = useState<any>(null);
   const [realAds, setRealAds] = useState<any[]>([]);
   
@@ -344,15 +345,32 @@ const Billing = () => {
       return;
     }
     
-    // In real implementation, this would update the backend
-    console.log(`Updating ad ${adId} with ${discountType} discount: ${value}`);
+    // Find and update the ad
+    const adIndex = adBillingData.findIndex(ad => ad.id === adId);
+    if (adIndex === -1) return;
+    
+    const discountAmount = calculateDiscount(adBillingData[adIndex].baseAmount, 
+      discountType === 'percent' ? value : 0, 
+      discountType === 'amount' ? value : 0);
+    
+    // Update the ad with new discount and recalculate totals
+    adBillingData[adIndex].discount = discountAmount;
+    adBillingData[adIndex].subtotal = adBillingData[adIndex].baseAmount - discountAmount;
+    adBillingData[adIndex].gst = adBillingData[adIndex].subtotal * 0.05;
+    adBillingData[adIndex].totalAmount = adBillingData[adIndex].subtotal + adBillingData[adIndex].gst;
+    
+    // Reset form
+    setSelectedAd(null);
+    setDiscountPercent(0);
+    setDiscountAmount(0);
+    
     toast({
       title: "Discount Applied",
-      description: `${discountType === 'percent' ? value + '%' : '$' + value} discount applied successfully`,
+      description: `${discountType === 'percent' ? value + '%' : '₹' + value} discount applied successfully`,
     });
   };
 
-  const updatePaymentStatus = (adId: number, status: string, receipt?: string) => {
+  const updatePaymentStatus = (adId: number, status: string, receipt?: string, amount?: number) => {
     const ad = adBillingData.find(a => a.id === adId);
     if (!ad) return;
 
@@ -366,17 +384,49 @@ const Billing = () => {
       return;
     }
 
-    if (status === "paid" && !receipt) {
+    if ((status === "paid" || status === "partial") && !receipt) {
       toast({
         title: "Receipt Required",
-        description: "Receipt/UTR number is required when marking as paid",
+        description: "Receipt/UTR number is required when marking as paid or partial",
         variant: "destructive",
       });
       return;
     }
 
-    // In real implementation, this would update the backend
-    console.log(`Updating payment status for ad ${adId} to ${status}`, receipt ? `Receipt: ${receipt}` : '');
+    if (status === "partial" && (!amount || amount <= 0)) {
+      toast({
+        title: "Amount Required",
+        description: "Payment amount is required for partial payments",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update the ad payment status
+    const adIndex = adBillingData.findIndex(a => a.id === adId);
+    if (adIndex !== -1) {
+      adBillingData[adIndex].paymentStatus = status;
+      
+      // Add payment record for paid and partial statuses
+      if ((status === "paid" || status === "partial") && amount && receipt) {
+        const newPayment = {
+          id: Date.now(),
+          amount: status === "paid" ? ad.totalAmount : amount,
+          date: new Date().toISOString().split('T')[0],
+          receiptNumber: receipt,
+          method: "bank_transfer",
+          addedBy: "Current User",
+          addedByRole: currentUserRole,
+          notes: status === "paid" ? "Full payment" : "Partial payment"
+        };
+        
+        if (!adBillingData[adIndex].payments) {
+          adBillingData[adIndex].payments = [];
+        }
+        adBillingData[adIndex].payments.push(newPayment);
+      }
+    }
+    
     toast({
       title: "Payment Status Updated",
       description: `Payment status changed to ${status}`,
@@ -871,7 +921,7 @@ const Billing = () => {
                                 </Select>
                               </div>
 
-                              {newPaymentStatus === "paid" && (
+                              {(newPaymentStatus === "paid" || newPaymentStatus === "partial") && (
                                 <div className="space-y-2">
                                   <Label htmlFor="receipt-number">Receipt/UTR Number *</Label>
                                   <Input
@@ -883,6 +933,23 @@ const Billing = () => {
                                 </div>
                               )}
 
+                              {newPaymentStatus === "partial" && (
+                                <div className="space-y-2">
+                                  <Label htmlFor="partial-amount">Payment Amount (₹) *</Label>
+                                  <Input
+                                    id="partial-amount"
+                                    type="number"
+                                    placeholder="Enter payment amount"
+                                    value={partialAmount}
+                                    onChange={(e) => setPartialAmount(Number(e.target.value))}
+                                    max={ad.totalAmount}
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Maximum: ₹{ad.totalAmount.toFixed(2)}
+                                  </p>
+                                </div>
+                              )}
+
                               <div className="flex gap-2">
                                 <Button 
                                   variant="outline" 
@@ -891,14 +958,17 @@ const Billing = () => {
                                     setPaymentUpdateAd(null);
                                     setNewPaymentStatus("");
                                     setReceiptNumber("");
+                                    setPartialAmount(0);
                                   }}
                                 >
                                   Cancel
                                 </Button>
                                 <Button 
                                   className="flex-1" 
-                                  onClick={() => updatePaymentStatus(ad.id, newPaymentStatus, receiptNumber)}
-                                  disabled={!newPaymentStatus}
+                                  onClick={() => updatePaymentStatus(ad.id, newPaymentStatus, receiptNumber, partialAmount)}
+                                  disabled={!newPaymentStatus || 
+                                    ((newPaymentStatus === "paid" || newPaymentStatus === "partial") && !receiptNumber) ||
+                                    (newPaymentStatus === "partial" && partialAmount <= 0)}
                                 >
                                   Update Status
                                 </Button>

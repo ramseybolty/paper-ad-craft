@@ -866,12 +866,15 @@ Please sign and return this order copy.
                     <div className="p-4 bg-success/10 rounded-lg border border-success/20">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            Classified Ad: {formData.words} word{formData.words !== "1" ? "s" : ""}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Cost per date: ₹{(parseInt(formData.words) * 5).toFixed(2)} (₹5/word)
-                          </p>
+                           <p className="text-sm font-medium text-foreground">
+                             Classified Ad: {formData.words} word{formData.words !== "1" ? "s" : ""}
+                           </p>
+                           <p className="text-xs text-muted-foreground mt-1">
+                             Base: ₹{(parseInt(formData.words) * 5).toFixed(2)} + GST (5%): ₹{(parseInt(formData.words) * 5 * 0.05).toFixed(2)}
+                           </p>
+                           <p className="text-sm font-semibold text-foreground">
+                             Total per date: ₹{(parseInt(formData.words) * 5 * 1.05).toFixed(2)}
+                           </p>
                         </div>
                         <Badge variant="default" className="bg-success text-success-foreground">
                           Words Set
@@ -927,12 +930,15 @@ Please sign and return this order copy.
                     <div className="p-4 bg-success/10 rounded-lg border border-success/20">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Cost per date: ₹{(parseInt(formData.columns) * parseInt(formData.centimeters) * 80).toFixed(2)}
-                          </p>
+                           <p className="text-sm font-medium text-foreground">
+                             Size: {formData.columns} Column{formData.columns !== "1" ? "s" : ""} × {formData.centimeters} cm
+                           </p>
+                           <p className="text-xs text-muted-foreground mt-1">
+                             Base: ₹{(parseInt(formData.columns) * parseInt(formData.centimeters) * 80).toFixed(2)} + GST (5%): ₹{(parseInt(formData.columns) * parseInt(formData.centimeters) * 80 * 0.05).toFixed(2)}
+                           </p>
+                           <p className="text-sm font-semibold text-foreground">
+                             Total per date: ₹{(parseInt(formData.columns) * parseInt(formData.centimeters) * 80 * 1.05).toFixed(2)}
+                           </p>
                         </div>
                         <Badge variant="default" className="bg-success text-success-foreground">
                           Size Set
