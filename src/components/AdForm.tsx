@@ -104,7 +104,8 @@ const AdForm = () => {
         ...formData,
         clientName: client.name,
         clientType: client.type,
-        clientContact: client.contact
+        clientContact: client.contact,
+        clientGst: client.gstNumber || ""
       });
       setIsClientFromDropdown(true);
       setClientSearchOpen(false);
