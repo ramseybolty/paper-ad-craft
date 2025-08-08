@@ -88,25 +88,29 @@ const Billing = () => {
   // Convert real ads to billing format and merge with mock data
   const convertToBillingData = (ad: any) => {
     const currentDate = new Date().toISOString().split('T')[0];
-    const startDate = ad.startDate || currentDate;
-    const totalCost = parseFloat(ad.totalCost || 0);
+    const startDate = ad.createdAt ? ad.createdAt.split('T')[0] : currentDate;
+    
+    // Use the correct amount fields from the ad structure
+    const baseAmount = parseFloat(ad.baseAmount || ad.totalAmount || 0);
+    const gstAmount = parseFloat(ad.gst || baseAmount * 0.05);
+    const totalAmount = parseFloat(ad.totalAmount || baseAmount + gstAmount);
     
     return {
       id: ad.id,
-      title: ad.title,
+      title: ad.title || "Untitled Ad",
       clientName: ad.clientName || "Unknown Client",
-      clientType: "individual",
-      agentName: "System Agent",
-      page: ad.page,
-      size: ad.size,
+      clientType: ad.clientType || "individual",
+      agentName: ad.agentName || "Direct",
+      page: ad.page || "front",
+      size: ad.size || "N/A",
       publishDates: ad.publishDates || [startDate],
-      baseAmount: totalCost,
+      baseAmount: baseAmount,
       discount: 0,
-      subtotal: totalCost,
-      gst: totalCost * 0.05,
-      totalAmount: totalCost * 1.05,
+      subtotal: baseAmount,
+      gst: gstAmount,
+      totalAmount: totalAmount,
       paymentStatus: ad.paymentStatus || "pending",
-      invoiceNumber: `INV-${ad.id}`,
+      invoiceNumber: ad.invoiceNumber || `INV-${ad.id}`,
       dueDate: startDate,
       payments: ad.payments || []
     };
