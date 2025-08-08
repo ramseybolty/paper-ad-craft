@@ -129,7 +129,8 @@ const AdForm = () => {
     setFormData({
       ...formData,
       clientName: "",
-      clientContact: ""
+      clientContact: "",
+      clientGst: ""
     });
     setIsClientFromDropdown(false);
   };
@@ -650,12 +651,22 @@ Please sign and return this order copy.
                     placeholder="Enter GST number (e.g., 27ABCDE1234F1Z5)"
                     value={formData.clientGst}
                     onChange={(e) => setFormData({...formData, clientGst: e.target.value})}
-                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    className={cn(
+                      "transition-all duration-300 focus:ring-2 focus:ring-primary/20",
+                      isClientFromDropdown && "bg-muted/50 cursor-not-allowed opacity-60"
+                    )}
+                    disabled={isClientFromDropdown}
                     maxLength={15}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Optional - Required only for business clients for tax purposes
-                  </p>
+                  {isClientFromDropdown ? (
+                    <p className="text-xs text-muted-foreground">
+                      ℹ️ GST number auto-filled from saved client. Use "Clear & Edit Manually" to modify.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Optional - Required only for business clients for tax purposes
+                    </p>
+                  )}
                 </div>
               </div>
 
